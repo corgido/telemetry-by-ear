@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Telemetry by ear · a case study</title>
+<meta name="description" content="How an AI coding agent and a sim racer built software that reads a race car's telemetry from its onboard sound, and how its claims were made checkable without an expert in the loop." />
+<style>
+:root { --bg: #f7f8fa; --card: #fff; --fg: #161a21; --muted: #5f6b7b; --soft: #8a95a5; --line: #e3e6eb; --accent: #5f6a00; --accent2: #a6b01a;
+  --data2: #9aa4b3; --band: rgb(95 106 0 / 0.08); color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0b0d10; --card: #13161b; --fg: #eff2f5; --muted: #8b95a5; --soft: #5f6878; --line: #232830;
+  --accent: #d0e400; --accent2: #7d8a00; --data2: #4a525e; --band: rgb(208 228 0 / 0.08); color-scheme: dark; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); }
+body { font: 17px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 48px 16px 64px; }
+h1 { font-size: clamp(30px, 6vw, 42px); line-height: 1.12; letter-spacing: -0.02em; margin: 0 0 14px; }
+h2 { font-size: 22px; margin: 48px 0 10px; letter-spacing: -0.01em; }
+h3 { font-size: 17px; margin: 24px 0 6px; }
+p, li { color: var(--fg); }
+.kicker { font: 600 12px/1 ui-monospace, Menlo, monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 0 0 16px; }
+.lede { font-size: 19px; color: var(--muted); }
+.tldr { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 28px 0; }
+.tldr ul { margin: 6px 0 0; padding-left: 20px; }
+figure { margin: 22px 0; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
+figure img { width: 100%; height: auto; border-radius: 6px; display: block; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 14px 0; }
+th, td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+code { font: 14px ui-monospace, Menlo, monospace; background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
+a { color: inherit; text-underline-offset: 2px; }
+footer { margin-top: 56px; font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+.chart { width: 100%; height: auto; display: block; }
+.chart .lab { font-size: 13px; fill: var(--fg); } .chart .val { font: 600 12px ui-monospace, Menlo, monospace; fill: var(--fg); }
+.chart .tick { font: 11px ui-monospace, Menlo, monospace; fill: var(--muted); } .chart .flag { font: 700 11px ui-monospace, Menlo, monospace; fill: var(--fg); }
+.chart .grid { stroke: var(--line); } .chart .axis { stroke: var(--soft); } .chart .ref { stroke: var(--soft); stroke-dasharray: 4 3; }
+.chart .bar { fill: var(--accent); } .chart .bar2 { fill: var(--data2); } .chart .soft { fill: var(--soft); }
+.chart .dot { fill: var(--accent); } .chart .dot2 { fill: none; stroke: var(--soft); stroke-width: 2; }
+.chart .line { fill: none; stroke: var(--accent); stroke-width: 2; } .chart .line2 { fill: none; stroke: var(--soft); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.chart .band { fill: var(--band); }
+.legend { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<p class="kicker">Case study · corgido · October 2026</p>
+<h1>Telemetry by ear</h1>
+<p class="lede">An AI coding agent and a sim racer built software that reads a race car’s telemetry from its onboard sound. Nobody
+involved was an expert in all the fields it touches. This is how its claims were made checkable anyway.</p>
+
+<div class="tldr">
+  <b>In short</b>
+  <ul>
+    <li><b>What was built:</b> Onboard, a browser page that listens to an onboard video playing in another tab and reads the revs,
+      the gear changes, the throttle, the speed, the lap and the circuit from the engine’s sound alone, live.</li>
+    <li><b>How well it works:</b> on real Porsche 911 GT3 R onboards it was never tuned on, the gear is right three times in four
+      (always guessing the commonest gear would be right one time in four), the
+      speed within 1 to 4 %, and the lap time right to a few tenths (the live dash, deciding as it goes, has the gear right three
+      times in five). On a 24-hour race broadcast it lined 23 of 24 laps up with the official timing (median 0.29 s, worst 4.1 s), and the
+      gear at the speed traps 84 % of the time.</li>
+    <li><b>The method:</b> no claim was taken on trust, the agent’s or the human’s. Every reading was scored against something that
+      knew the truth: a racing game’s display, a team’s data overlay, an official timing sheet, or a test session driven to a plan.</li>
+  </ul>
+</div>
+
+<h2>The problem: a task without a verifier</h2>
+<p>Reading telemetry from sound sits across signal processing, vehicle dynamics, gearbox design and the way race broadcasts are
+made. The human in this project races in a simulator and builds software, but isn’t a specialist in any of those. The agent can
+write code in all of them, and its mistakes come out in the same confident voice as its findings.</p>
+<p>So the usual safety net, an expert who reads the output and says “that’s wrong”, wasn’t there. Asking an agent to do this was,
+by ordinary engineering standards, unfair. The project only worked because it replaced the expert with two cheaper things:
+truth, and legibility.</p>
+
+<h2>Move one: make the truth cheap</h2>
+<p>The first decision was where truth could come from. Each source settles a different kind of claim:</p>
+<table>
+  <thead><tr><th>Source of truth</th><th>What it shows</th><th>What it settled</th></tr></thead>
+  <tbody>
+    <tr><td>A racing game (Assetto Corsa Competizione)</td><td>Gear, speed, revs and pedals on screen in every frame</td><td>The method itself: thousands of scored moments, on the owner’s footage and other drivers’</td></tr>
+    <tr><td>Test sessions driven to a plan</td><td>Known regimes, opened by a marker both the sound and the screen carry</td><td>Tyre temperatures against the display’s colours; how the engine idles</td></tr>
+    <tr><td>Porsche customer-team onboards</td><td>A real car’s speed, gear, throttle and brake drawn over the video</td><td>The real car’s gearbox, and the real-car accuracy</td></tr>
+    <tr><td>The organiser’s official timing</td><td>Every lap, sector and speed trap of a real race</td><td>Laps, pit stops, Code 60 zones and gearing on a 24-hour broadcast</td></tr>
+  </tbody>
+</table>
+<figure><svg viewBox="0 0 720 180" role="img" aria-label="Three holds on the rev limiter at standstill, the marker that opens each phase of the tyre test." class="chart"><rect x="240.4" y="20" width="153.2" height="110" class="band"/><text x="317.0" y="16.0" class="tick" text-anchor="middle">three holds: the marker</text><text x="189.3" y="100.9" class="tick" text-anchor="middle">idle</text><text x="607.1" y="40.6" class="tick" text-anchor="middle">away in first</text><line x1="50" x2="700" y1="130.0" y2="130.0" class="grid"/><text x="44.0" y="134.0" class="tick" text-anchor="end">0k</text><line x1="50" x2="700" y1="81.1" y2="81.1" class="grid"/><text x="44.0" y="85.1" class="tick" text-anchor="end">4k</text><line x1="50" x2="700" y1="32.2" y2="32.2" class="grid"/><text x="44.0" y="36.2" class="tick" text-anchor="end">8k</text><path d="M154.5,120.5 L166.1,112.7 L177.7,110.1 L189.3,109.1 L200.9,108.9 L212.5,108.9 L224.1,108.9 L235.7,108.9 L247.3,45.3 L258.9,26.1 L270.5,31.3 L282.1,98.9 L293.8,25.7 L305.4,24.5 L317.0,37.9 L328.6,102.2 L340.2,84.0 L351.8,26.1 L363.4,24.9 L375.0,51.5 L386.6,105.7 L398.2,108.5 L409.8,108.8 L421.4,108.8 L433.0,108.8 L444.6,24.9 L456.2,68.3 L467.9,50.1 L479.5,97.2 L491.1,91.8 L502.7,86.4 L514.3,85.6 L525.9,85.4 L537.5,71.2 L549.1,51.5 L560.7,43.4 L572.3,55.5 L583.9,46.7 L595.5,61.4 L607.1,60.2 L618.8,58.5 L630.4,56.9 L642.0,53.3 L653.6,50.7 L665.2,47.0 L676.8,42.6 L688.4,37.9 L700.0,33.4" class="line"/><text x="50.0" y="152.0" class="tick" text-anchor="start">revs on the game&#x27;s display, seconds 512 to 540 of the session: started, idling, the marker, then away</text></svg><figcaption>The marker: the engine started, three holds on the rev limiter while standing still, then away. Driven at the start of each phase of a
+tyre test. It sits in the sound and on the game’s display at once, so the two can be lined up and each phase found again.
+<a href="https://youtu.be/BY01bCvH24k?t=516">Watch it in the session</a> (a deliberately dull recording: it is data, not a show).</figcaption></figure>
+<p>A racing game turned out to be the most useful source: its display is ground truth for every frame, so every recording grades the
+software. The footage adds up: 81 hours of it (66 of the game, 15 of real cars), gone over again and again as the
+ideas changed, so the software has listened to 246 hours and read 78 hours of on-screen data.</p>
+
+<h2>Move two: make every claim legible</h2>
+<p>Every number in the project’s record names the script and the data that produce it, and the command that reproduces it. Each step
+followed the same loop:</p>
+<ol>
+  <li>A question (“does the engine’s sound carry the gear?”).</li>
+  <li>A small probe, built to answer only that.</li>
+  <li>A score against the truth, with the test data chosen before the result was known.</li>
+  <li>A written entry: what was tried, what it gave, and what changed because of it, including the nine ideas that didn’t hold.</li>
+</ol>
+<p>The whole record is published beside this page, <a href="record.html">every part labelled with its provenance</a>: written
+by the agent, derived by a script, or read and confirmed by a person. This made the work checkable by someone who isn’t a specialist. A lot of it could be checked in seconds: the dash showing 6 next to
+a car’s own 6, the three limiter holds, a confidence line falling to nothing at top speed.</p>
+<figure><img src="img/live.png" alt="Onboard's live view listening to a synthetic lap, with the engineering view on: the gear, revs, speed and throttle, each with the numbers behind it, and the last minute of revs." loading="lazy" />
+<figcaption>Onboard’s live view, with the engineering view on. Under each reading is the number behind it: how sure it is of the
+engine, where the gear comes from and how far its two methods agree. (A synthetic lap, made by the project’s own simulator.)</figcaption></figure>
+
+<h2>Who brought what</h2>
+<p>The split was not “the agent writes, the human reviews”. The human couldn’t review the signal processing. What the human brought
+was the view from the driver’s seat, which caught what the numbers alone did not:</p>
+<ul>
+  <li>The simulated test laps were too fast for the circuits. They were 5 to 7 % quick; fixing how the lap simulation handled corners
+    brought them within 1 %.</li>
+  <li>In ACC, a tyre is “in its window” from 80 to 90 °C, and the game’s widget doesn’t change colour between 70 and 90. That turned a
+    colour-reading problem into a lookup.</li>
+  <li>Old versions of the game have a different tyre model, so recordings older than two years were thrown out.</li>
+  <li>On a real onboard, the dash went blank at the end of the Nordschleife’s longest straight (below).</li>
+  <li>The software looked broken when it was told the wrong car. That became a guard that notices the mistake.</li>
+</ul>
+<p>The agent brought the breadth and the speed: the analyser, the screen reader, the trackers, the scoring, the record, and the
+patience to go over the footage one more time.</p>
+
+<h2>What it found</h2>
+<h3>A 24-hour race from its broadcast sound</h3>
+<p>The broadcast onboard of the #911 at the 2026 Nürburgring 24 Hours, 3 hours 42 minutes of racing, laid on the organiser’s timing.
+The engine’s sound doesn’t mark the lap; the broadcast’s sound drops out at the same spot on every lap, and that became the clock.
+23 of 24 laps line up with the official times: 13 within half a second, 17 within a second, the median 0.29 s and the worst 4.1 s.
+All three pit stops show as the car standing still. One thing is fitted: the quiet stretches were found in the sound alone, but where
+they sit in the lap, and when the race started, were then fitted to the official timing, three numbers for 24 laps. So the laps
+test how regularly the stretches recur, not where they fall.</p>
+<figure><svg viewBox="0 0 720 170" role="img" aria-label="The 24 laps of the #911 at the 2026 Nürburgring 24 Hours: 23 lined up with the official timing to a median 0.29 s; lap 16 not found; stops on laps 8, 16 and 24." class="chart"><line x1="40" x2="710" y1="120.0" y2="120.0" class="axis"/><text x="34.0" y="124.0" class="tick" text-anchor="end">0 s</text><line x1="40" x2="710" y1="80.0" y2="80.0" class="grid"/><text x="34.0" y="84.0" class="tick" text-anchor="end">2 s</text><line x1="40" x2="710" y1="40.0" y2="40.0" class="grid"/><text x="34.0" y="44.0" class="tick" text-anchor="end">4 s</text><rect x="47.0" y="118.0" width="14" height="2.0" rx="4" class="bar"><title>Lap 1: 0.0 s</title></rect><text x="54.0" y="166.0" class="tick" text-anchor="middle">1</text><rect x="74.9" y="94.0" width="14" height="26.0" rx="4" class="bar"><title>Lap 2: 1.2 s</title></rect><rect x="102.8" y="108.0" width="14" height="12.0" rx="4" class="bar"><title>Lap 3: 0.5 s</title></rect><rect x="130.7" y="112.0" width="14" height="8.0" rx="4" class="bar"><title>Lap 4: 0.3 s</title></rect><rect x="158.6" y="36.0" width="14" height="84.0" rx="4" class="bar"><title>Lap 5: 4.1 s</title></rect><rect x="186.5" y="116.0" width="14" height="4.0" rx="4" class="bar"><title>Lap 6: 0.1 s</title></rect><rect x="214.5" y="114.0" width="14" height="6.0" rx="4" class="bar"><title>Lap 7: 0.2 s</title></rect><rect x="242.4" y="86.0" width="14" height="34.0" rx="4" class="bar"><title>Lap 8: 1.6 s</title></rect><text x="249.4" y="136.0" class="flag" text-anchor="middle">P</text><text x="249.4" y="166.0" class="tick" text-anchor="middle">8</text><rect x="270.3" y="116.0" width="14" height="4.0" rx="4" class="bar"><title>Lap 9: 0.1 s</title></rect><rect x="298.2" y="106.0" width="14" height="14.0" rx="4" class="bar"><title>Lap 10: 0.6 s</title></rect><rect x="326.1" y="112.0" width="14" height="8.0" rx="4" class="bar"><title>Lap 11: 0.3 s</title></rect><rect x="354.0" y="118.0" width="14" height="2.0" rx="4" class="bar"><title>Lap 12: 0.0 s</title></rect><rect x="382.0" y="106.0" width="14" height="14.0" rx="4" class="bar"><title>Lap 13: 0.6 s</title></rect><rect x="409.9" y="118.0" width="14" height="2.0" rx="4" class="bar"><title>Lap 14: 0.0 s</title></rect><rect x="437.8" y="96.0" width="14" height="24.0" rx="4" class="bar"><title>Lap 15: 1.1 s</title></rect><text x="472.7" y="116.0" class="tick" text-anchor="middle">×</text><text x="472.7" y="136.0" class="flag" text-anchor="middle">P</text><rect x="460.8" y="144" width="23.9" height="3" rx="1.5" class="soft"/><text x="472.7" y="166.0" class="tick" text-anchor="middle">16</text><rect x="493.6" y="116.0" width="14" height="4.0" rx="4" class="bar"><title>Lap 17: 0.1 s</title></rect><rect x="488.7" y="144" width="23.9" height="3" rx="1.5" class="soft"/><rect x="521.5" y="114.0" width="14" height="6.0" rx="4" class="bar"><title>Lap 18: 0.2 s</title></rect><rect x="549.5" y="118.0" width="14" height="2.0" rx="4" class="bar"><title>Lap 19: 0.0 s</title></rect><rect x="544.5" y="144" width="23.9" height="3" rx="1.5" class="soft"/><rect x="577.4" y="118.0" width="14" height="2.0" rx="4" class="bar"><title>Lap 20: 0.0 s</title></rect><rect x="572.4" y="144" width="23.9" height="3" rx="1.5" class="soft"/><rect x="605.3" y="104.0" width="14" height="16.0" rx="4" class="bar"><title>Lap 21: 0.7 s</title></rect><rect x="600.3" y="144" width="23.9" height="3" rx="1.5" class="soft"/><rect x="633.2" y="82.0" width="14" height="38.0" rx="4" class="bar"><title>Lap 22: 1.8 s</title></rect><rect x="661.1" y="78.0" width="14" height="42.0" rx="4" class="bar"><title>Lap 23: 2.0 s</title></rect><rect x="689.0" y="106.0" width="14" height="14.0" rx="4" class="bar"><title>Lap 24: 0.6 s</title></rect><text x="696.0" y="136.0" class="flag" text-anchor="middle">P</text><text x="696.0" y="166.0" class="tick" text-anchor="middle">24</text></svg><figcaption>Each lap: how far the lap heard sat from the official lap. P: a pit stop. Bar below: Code 60. ×: not
+found (a stop and Code 60 in the same lap).</figcaption></figure>
+<p>A second, unrelated listener was asked too: a music analyser from the corgido library, which reports chords, drum hits
+and how much the sound is changing, and knows nothing of engines or laps. Over the race’s first 26 minutes, the only times
+its sound held steady for 5 s or more fall at the end of a lap, inside the stretch Onboard’s clock counts by. It named the engine’s
+firing note as a chord root two and a half times as often as chance, and its hi-hat detector fired on the downshift blips.</p>
+
+<h3>A real car, measured from the teams’ own overlays</h3>
+<p>Porsche’s customer teams publish onboards with the car’s data drawn on screen. Seventeen were split before any was downloaded:
+eleven to learn from, six sealed (two of the six turned out to carry another production’s overlay, so four test it). From the eleven came the real car’s gearbox, and two things the game had hidden: a real car keeps
+accelerating through an upshift, so the drop in revs is smaller than the gear ratio, and it accelerates less hard than published
+power, mass and drag suggest. With both learned, the gear went from right a quarter of the time, no better than always guessing fourth, to
+three-quarters, and held on the sealed four.</p>
+<figure><svg viewBox="0 0 720 202" role="img" aria-label="Gear right on real 992 GT3 R onboards: 24.6 % without ratios; 48.0 % with heard upshift templates; 74.7 % with the learned climb (each clip held out); 73.3 % on the four sealed onboards; always guessing the commonest gear, 24.2 %." class="chart"><text x="240.0" y="28.0" class="lab" text-anchor="end">No ratios (counted, physics)</text><rect x="250" y="14" width="98.4" height="20" rx="4" class="bar2"/><text x="356.4" y="29.0" class="val" text-anchor="start">24.6 %</text><text x="240.0" y="62.0" class="lab" text-anchor="end">Real ratios, no heard templates</text><rect x="250" y="48" width="83.2" height="20" rx="4" class="bar2"/><text x="341.2" y="63.0" class="val" text-anchor="start">20.8 %</text><text x="240.0" y="96.0" class="lab" text-anchor="end">+ upshifts as heard</text><rect x="250" y="82" width="192.0" height="20" rx="4" class="bar2"/><text x="450.0" y="97.0" class="val" text-anchor="start">48.0 %</text><text x="240.0" y="130.0" class="lab" text-anchor="end">+ the climb, learned</text><rect x="250" y="116" width="298.8" height="20" rx="4" class="bar2"/><text x="556.8" y="131.0" class="val" text-anchor="start">74.7 %</text><text x="240.0" y="164.0" class="lab" text-anchor="end">The four sealed onboards</text><rect x="250" y="150" width="293.2" height="20" rx="4" class="bar"/><text x="551.2" y="165.0" class="val" text-anchor="start">73.3 %</text><line x1="521.6" x2="521.6" y1="6" y2="180" class="ref"/><text x="521.6" y="194.0" class="tick" text-anchor="middle">in the game, other footage: 67.9 %</text><line x1="346.8" x2="346.8" y1="6" y2="180" class="ref"/><text x="346.8" y="194.0" class="tick" text-anchor="middle">always fourth: 24.2 %</text></svg><figcaption>Gear right on real 992 GT3 R onboards. The first four bars are the learning clips, each held out of
+its own learning; the last is the four sealed onboards, scored with what the eleven taught. Lines: always guessing the commonest
+gear, and the gear on other drivers’ footage in the game, a different test (other cars, other recordings), so not a like-for-like
+comparison.</figcaption></figure>
+<figure><svg viewBox="0 0 720 200" role="img" aria-label="Each gear&#x27;s km/h per 1000 rpm: the real 992 GT3 R (measured from team onboards) against the game&#x27;s 992; the real car is 3 to 4 % longer in gears 1 to 4." class="chart"><line x1="50" x2="700" y1="160.0" y2="160.0" class="grid"/><text x="44.0" y="164.0" class="tick" text-anchor="end">10</text><line x1="50" x2="700" y1="99.1" y2="99.1" class="grid"/><text x="44.0" y="103.1" class="tick" text-anchor="end">20</text><line x1="50" x2="700" y1="38.3" y2="38.3" class="grid"/><text x="44.0" y="42.3" class="tick" text-anchor="end">30</text><circle cx="96.2" cy="150.5" r="5" class="dot2"/><circle cx="112.2" cy="147.5" r="5" class="dot"/><text x="104.2" y="178.0" class="tick" text-anchor="middle">gear 1</text><text x="112.2" y="137.5" class="val" text-anchor="middle">12.1</text><circle cx="204.5" cy="128.9" r="5" class="dot2"/><circle cx="220.5" cy="125.1" r="5" class="dot"/><text x="212.5" y="178.0" class="tick" text-anchor="middle">gear 2</text><text x="220.5" y="115.1" class="val" text-anchor="middle">15.7</text><circle cx="312.8" cy="105.9" r="5" class="dot2"/><circle cx="328.8" cy="102.3" r="5" class="dot"/><text x="320.8" y="178.0" class="tick" text-anchor="middle">gear 3</text><text x="328.8" y="92.3" class="val" text-anchor="middle">19.5</text><circle cx="421.2" cy="81.6" r="5" class="dot2"/><circle cx="437.2" cy="77.5" r="5" class="dot"/><text x="429.2" y="178.0" class="tick" text-anchor="middle">gear 4</text><text x="437.2" y="67.5" class="val" text-anchor="middle">23.6</text><circle cx="529.5" cy="56.5" r="5" class="dot2"/><circle cx="545.5" cy="54.7" r="5" class="dot"/><text x="537.5" y="178.0" class="tick" text-anchor="middle">gear 5</text><text x="545.5" y="44.7" class="val" text-anchor="middle">27.3</text><circle cx="637.8" cy="31.4" r="5" class="dot2"/><circle cx="653.8" cy="31.2" r="5" class="dot"/><text x="645.8" y="178.0" class="tick" text-anchor="middle">gear 6</text><text x="653.8" y="21.2" class="val" text-anchor="middle">31.2</text><text x="50.0" y="12.0" class="tick" text-anchor="start">km/h per 1000 rpm</text></svg><figcaption>Each gear’s speed per 1000 rpm. Filled: the real car, measured. Hollow: the game’s version of the same
+car. Agreement to within 1 % in the top two gears; the real car is 3 to 4 % longer in the lower four.</figcaption></figure>
+
+<h3>The straight that broke it</h3>
+<p>A guard rejects music: a held note “stands still”, an engine moves. At the end of the Döttinger Höhe a real car reaches top speed
+and its revs stop moving too, so the guard decided it was music. The driver saw the dash go blank and exported the run; the fix
+lets an engine that has been moving hold still high in its range.</p>
+<figure><svg viewBox="0 0 720 200" role="img" aria-label="Confidence through the end of a real Nordschleife lap: before the fix it fell to nothing flat out at top speed; after, it holds." class="chart"><rect x="469.0" y="20" width="132.0" height="130" class="band"/><text x="535.0" y="16.0" class="tick" text-anchor="middle">flat out, top speed</text><line x1="40" x2="700" y1="150.0" y2="150.0" class="grid"/><text x="34.0" y="154.0" class="tick" text-anchor="end">0</text><line x1="40" x2="700" y1="85.0" y2="85.0" class="grid"/><text x="34.0" y="89.0" class="tick" text-anchor="end">50</text><line x1="40" x2="700" y1="20.0" y2="20.0" class="grid"/><text x="34.0" y="24.0" class="tick" text-anchor="end">100</text><path d="M40.8,31.5 L42.4,33.9 L44.1,35.2 L45.7,45.3 L47.4,55.3 L49.0,60.7 L50.7,63.1 L52.3,61.0 L54.0,56.2 L55.6,53.6 L57.3,45.1 L58.9,37.6 L60.6,33.6 L62.2,32.4 L63.9,33.0 L65.5,35.8 L67.2,41.2 L68.8,41.5 L70.5,39.1 L72.1,38.4 L73.8,38.9 L75.4,40.4 L77.1,38.4 L78.7,33.2 L80.4,34.9 L82.0,39.3 L83.7,47.5 L85.3,51.6 L87.0,51.8 L88.6,51.9 L90.3,52.1 L91.9,47.9 L93.6,41.2 L95.2,36.3 L96.9,42.8 L98.5,52.3 L100.2,67.4 L101.8,76.8 L103.5,81.7 L105.1,84.1 L106.8,82.0 L108.4,80.7 L110.1,81.1 L111.7,72.6 L113.4,70.0 L115.0,69.0 L116.7,68.5 L118.3,67.0 L120.0,56.2 L121.6,50.5 L123.3,49.7 L124.9,51.4 L126.6,59.6 L128.2,67.9 L129.9,77.4 L131.5,86.3 L133.2,92.4 L134.8,94.3 L136.5,95.2 L138.1,94.3 L139.8,98.0 L141.4,104.1 L143.1,109.5 L144.7,105.8 L146.4,106.0 L148.0,101.3 L149.7,93.9 L151.3,82.2 L153.0,71.8 L154.6,63.3 L156.3,58.6 L157.9,54.2 L159.6,55.3 L161.2,58.6 L162.9,63.5 L164.5,63.1 L166.2,62.0 L167.8,68.3 L169.5,72.6 L171.1,74.6 L172.8,70.9 L174.4,65.3 L176.1,60.5 L177.7,55.8 L179.4,51.8 L181.0,46.2 L182.7,38.9 L184.3,36.0 L186.0,34.7 L187.6,33.7 L189.3,35.2 L190.9,28.9 L192.6,26.7 L194.2,28.7 L195.9,30.8 L197.5,32.6 L199.2,33.6 L200.8,32.8 L202.5,36.7 L204.1,38.2 L205.8,37.1 L207.4,36.9 L209.1,38.6 L210.7,40.8 L212.4,40.8 L214.0,37.3 L215.7,35.4 L217.3,33.4 L219.0,31.3 L220.6,27.8 L222.3,24.5 L223.9,23.0 L225.6,21.5 L227.2,20.7 L228.9,20.6 L230.5,20.2 L232.2,20.0 L233.8,29.7 L235.5,40.2 L237.1,51.0 L238.8,61.2 L240.4,67.7 L242.1,71.4 L243.7,73.3 L245.4,73.9 L247.0,70.9 L248.7,62.9 L250.3,54.4 L252.0,59.0 L253.6,62.5 L255.3,65.7 L256.9,64.4 L258.6,65.5 L260.2,66.8 L261.9,66.6 L263.5,56.6 L265.2,53.2 L266.8,54.0 L268.5,48.2 L270.1,41.0 L271.8,39.1 L273.4,38.6 L275.1,37.8 L276.7,34.1 L278.4,28.7 L280.0,25.8 L281.7,24.5 L283.3,22.2 L285.0,21.3 L286.6,20.9 L288.3,20.9 L289.9,25.2 L291.6,26.9 L293.2,31.5 L294.9,33.9 L296.5,35.2 L298.2,38.0 L299.8,45.4 L301.5,51.0 L303.1,61.8 L304.8,66.1 L306.4,76.5 L308.1,88.0 L309.7,92.8 L311.4,90.9 L313.0,82.8 L314.7,74.0 L316.3,66.4 L318.0,54.4 L319.6,41.7 L321.3,34.3 L322.9,28.5 L324.6,26.5 L326.2,22.6 L327.9,28.2 L329.5,36.9 L331.2,45.6 L332.8,51.0 L334.5,53.8 L336.1,54.9 L337.8,55.5 L339.4,53.4 L341.1,53.8 L342.7,50.3 L344.4,54.4 L346.0,62.0 L347.7,67.7 L349.3,77.8 L351.0,83.3 L352.6,77.8 L354.3,75.2 L355.9,72.9 L357.6,73.1 L359.2,74.4 L360.9,67.4 L362.5,62.3 L364.2,63.8 L365.8,66.8 L367.5,65.3 L369.1,63.5 L370.8,63.3 L372.4,63.6 L374.1,59.7 L375.7,59.6 L377.4,65.9 L379.0,76.1 L380.7,76.8 L382.3,73.7 L384.0,73.3 L385.6,73.7 L387.3,71.3 L388.9,62.5 L390.6,48.8 L392.2,40.6 L393.9,36.7 L395.5,34.1 L397.2,33.0 L398.8,30.2 L400.5,27.8 L402.1,26.5 L403.8,26.3 L405.4,26.3 L407.1,27.2 L408.7,30.8 L410.4,32.4 L412.0,32.4 L413.7,32.3 L415.3,32.3 L417.0,34.3 L418.6,33.4 L420.3,29.7 L421.9,28.0 L423.6,27.8 L425.2,27.2 L426.9,26.3 L428.5,23.3 L430.2,22.4 L431.8,21.7 L433.5,21.3 L435.1,20.6 L436.8,20.2 L438.4,20.0 L440.1,20.0 L441.7,20.0 L443.4,20.0 L445.0,20.0 L446.7,20.0 L448.3,20.0 L450.0,20.0 L451.6,20.0 L453.3,20.6 L454.9,20.7 L456.6,20.7 L458.2,21.3 L459.9,21.5 L461.5,21.5 L463.2,23.2 L464.8,23.3 L466.5,24.5 L468.1,25.9 L469.8,26.3 L471.4,26.9 L473.1,27.2 L474.7,26.3 L476.4,25.9 L478.0,24.8 L479.7,23.3 L481.3,22.4 L483.0,21.7 L484.6,21.3 L486.3,20.6 L487.9,20.2 L489.6,20.0 L491.2,20.0 L492.9,20.0 L494.5,20.0 L496.2,22.4 L497.8,26.9 L499.5,33.4 L501.1,41.5 L502.8,51.4 L504.4,62.5 L506.1,75.0 L507.7,86.1 L509.4,96.3 L511.0,105.4 L512.7,113.8 L514.3,121.2 L516.0,128.1 L517.6,134.2 L519.3,139.2 L520.9,143.1 L522.6,146.1 L524.2,148.1 L525.9,149.4 L527.5,150.0 L529.2,150.0 L530.8,150.0 L532.5,150.0 L534.1,150.0 L535.8,150.0 L537.4,150.0 L539.1,150.0 L540.7,150.0 L542.4,150.0 L544.0,150.0 L545.7,150.0 L547.3,150.0 L549.0,150.0 L550.6,150.0 L552.3,150.0 L553.9,150.0 L555.6,150.0 L557.2,150.0 L558.9,150.0 L560.5,150.0 L562.2,150.0 L563.8,150.0 L565.5,150.0 L567.1,150.0 L568.8,150.0 L570.4,150.0 L572.1,150.0 L573.7,150.0 L575.4,150.0 L577.0,150.0 L578.7,150.0 L580.3,150.0 L582.0,150.0 L583.6,150.0 L585.3,150.0 L586.9,150.0 L588.6,150.0 L590.2,150.0 L591.9,150.0 L593.5,150.0 L595.2,150.0 L596.8,150.0 L598.5,150.0 L600.1,149.6 L601.8,147.8 L603.4,144.8 L605.1,140.3 L606.7,134.8 L608.4,129.6 L610.0,123.8 L611.7,120.7 L613.3,120.1 L615.0,121.6 L616.6,124.0 L618.3,124.6 L619.9,120.5 L621.6,117.9 L623.2,111.2 L624.9,99.1 L626.5,84.4 L628.2,71.6 L629.8,59.6 L631.5,51.0 L633.1,43.8 L634.8,36.9 L636.4,33.9 L638.1,31.9 L639.7,28.4 L641.4,26.9 L643.0,26.3 L644.7,23.3 L646.3,21.9 L648.0,25.8 L649.6,36.9 L651.3,48.0 L652.9,59.9 L654.6,75.7 L656.2,87.6 L657.9,99.7 L659.5,108.6 L661.2,109.7 L662.8,109.3 L664.5,106.4 L666.1,104.7 L667.8,109.7 L669.4,115.6 L671.1,120.1 L672.7,126.0 L674.4,133.7 L676.0,143.3 L677.7,147.6 L679.3,149.3 L681.0,149.8 L682.6,150.0 L684.3,150.0 L685.9,150.0 L687.6,150.0 L689.2,150.0 L690.9,150.0 L692.5,150.0 L694.2,150.0 L695.8,150.0" class="line2"/><path d="M40.8,27.2 L42.4,31.5 L44.1,33.9 L45.7,32.4 L47.4,32.1 L49.0,32.3 L50.7,33.0 L52.3,33.0 L54.0,32.4 L55.6,32.1 L57.3,33.6 L58.9,39.7 L60.6,52.5 L62.2,59.0 L63.9,63.3 L65.5,60.3 L67.2,58.4 L68.8,55.1 L70.5,48.0 L72.1,40.1 L73.8,35.2 L75.4,33.4 L77.1,33.7 L78.7,34.5 L80.4,40.2 L82.0,44.0 L83.7,40.2 L85.3,39.3 L87.0,37.8 L88.6,40.4 L90.3,41.2 L91.9,36.0 L93.6,34.5 L95.2,39.9 L96.9,44.3 L98.5,52.3 L100.2,51.9 L101.8,51.4 L103.5,51.2 L105.1,49.2 L106.8,41.9 L108.4,35.8 L110.1,35.8 L111.7,42.8 L113.4,56.2 L115.0,68.1 L116.7,75.2 L118.3,78.1 L120.0,79.8 L121.6,79.1 L123.3,82.6 L124.9,75.9 L126.6,75.0 L128.2,72.9 L129.9,72.2 L131.5,71.4 L133.2,63.8 L134.8,53.4 L136.5,53.6 L138.1,49.3 L139.8,53.8 L141.4,66.4 L143.1,76.6 L144.7,84.1 L146.4,91.1 L148.0,93.4 L149.7,95.2 L151.3,96.7 L153.0,96.0 L154.6,99.9 L156.3,105.1 L157.9,107.3 L159.6,106.7 L161.2,103.0 L162.9,96.1 L164.5,84.6 L166.2,71.3 L167.8,68.7 L169.5,60.9 L171.1,57.3 L172.8,55.7 L174.4,59.6 L176.1,66.1 L177.7,72.7 L179.4,66.4 L181.0,71.3 L182.7,77.2 L184.3,80.2 L186.0,76.8 L187.6,69.8 L189.3,62.2 L190.9,58.4 L192.6,50.1 L194.2,42.7 L195.9,38.2 L197.5,34.5 L199.2,32.8 L200.8,32.3 L202.5,32.3 L204.1,31.7 L205.8,28.2 L207.4,26.7 L209.1,28.9 L210.7,31.3 L212.4,32.3 L214.0,33.7 L215.7,33.4 L217.3,37.6 L219.0,42.8 L220.6,46.2 L222.3,50.6 L223.9,57.7 L225.6,60.3 L227.2,64.2 L228.9,62.9 L230.5,62.7 L232.2,63.5 L233.8,65.1 L235.5,67.4 L237.1,74.0 L238.8,81.7 L240.4,91.3 L242.1,100.6 L243.7,109.1 L245.4,117.1 L247.0,124.4 L248.7,130.5 L250.3,135.5 L252.0,139.2 L253.6,141.6 L255.3,142.2 L256.9,138.7 L258.6,133.1 L260.2,124.6 L261.9,115.1 L263.5,104.9 L265.2,99.3 L266.8,94.3 L268.5,89.6 L270.1,88.0 L271.8,87.8 L273.4,88.7 L275.1,85.6 L276.7,75.0 L278.4,67.2 L280.0,66.2 L281.7,59.2 L283.3,51.8 L285.0,46.0 L286.6,43.0 L288.3,42.3 L289.9,38.8 L291.6,31.1 L293.2,28.0 L294.9,26.7 L296.5,23.2 L298.2,21.7 L299.8,21.1 L301.5,20.9 L303.1,26.1 L304.8,28.9 L306.4,33.6 L308.1,37.1 L309.7,38.8 L311.4,39.9 L313.0,47.9 L314.7,51.4 L316.3,58.6 L318.0,64.0 L319.6,70.9 L321.3,80.2 L322.9,88.9 L324.6,88.2 L326.2,82.8 L327.9,74.2 L329.5,66.2 L331.2,56.8 L332.8,46.2 L334.5,36.5 L336.1,29.3 L337.8,25.8 L339.4,24.1 L341.1,24.1 L342.7,32.8 L344.4,43.2 L346.0,50.1 L347.7,53.6 L349.3,55.3 L351.0,56.2 L352.6,55.3 L354.3,53.8 L355.9,49.5 L357.6,50.1 L359.2,59.4 L360.9,65.9 L362.5,73.1 L364.2,83.1 L365.8,80.7 L367.5,76.8 L369.1,73.5 L370.8,71.6 L372.4,74.6 L374.1,71.3 L375.7,63.3 L377.4,62.7 L379.0,67.0 L380.7,67.5 L382.3,62.5 L384.0,59.9 L385.6,61.4 L387.3,60.5 L388.9,58.4 L390.6,62.2 L392.2,72.6 L393.9,79.6 L395.5,78.1 L397.2,75.3 L398.8,75.0 L400.5,75.0 L402.1,67.7 L403.8,54.5 L405.4,43.0 L407.1,37.1 L408.7,34.7 L410.4,33.4 L412.0,31.1 L413.7,29.3 L415.3,29.7 L417.0,29.7 L418.6,30.4 L420.3,30.0 L421.9,31.1 L423.6,32.8 L425.2,32.4 L426.9,30.6 L428.5,29.3 L430.2,31.3 L431.8,32.1 L433.5,30.6 L435.1,28.4 L436.8,27.4 L438.4,27.4 L440.1,27.4 L441.7,23.5 L443.4,22.0 L445.0,21.5 L446.7,20.9 L448.3,20.7 L450.0,20.2 L451.6,20.0 L453.3,20.0 L454.9,20.0 L456.6,20.0 L458.2,20.0 L459.9,20.0 L461.5,20.0 L463.2,20.0 L464.8,20.0 L466.5,20.0 L468.1,20.4 L469.8,20.6 L471.4,20.6 L473.1,20.9 L474.7,21.1 L476.4,22.4 L478.0,23.3 L479.7,24.5 L481.3,25.2 L483.0,26.5 L484.6,27.2 L486.3,27.6 L487.9,26.5 L489.6,25.9 L491.2,24.6 L492.9,23.9 L494.5,22.8 L496.2,21.7 L497.8,21.1 L499.5,20.9 L501.1,20.6 L502.8,20.4 L504.4,20.2 L506.1,20.2 L507.7,20.2 L509.4,20.2 L511.0,20.2 L512.7,20.2 L514.3,20.2 L516.0,20.2 L517.6,20.0 L519.3,20.0 L520.9,20.0 L522.6,20.0 L524.2,20.0 L525.9,20.0 L527.5,20.0 L529.2,20.2 L530.8,20.2 L532.5,20.2 L534.1,20.2 L535.8,20.2 L537.4,20.2 L539.1,20.2 L540.7,20.0 L542.4,20.0 L544.0,20.7 L545.7,21.3 L547.3,21.5 L549.0,21.7 L550.6,21.7 L552.3,21.9 L553.9,22.0 L555.6,21.7 L557.2,21.3 L558.9,21.1 L560.5,21.1 L562.2,21.1 L563.8,20.9 L565.5,20.7 L567.1,20.4 L568.8,20.2 L570.4,20.2 L572.1,20.0 L573.7,20.0 L575.4,20.0 L577.0,20.0 L578.7,20.0 L580.3,20.0 L582.0,20.0 L583.6,20.0 L585.3,20.0 L586.9,20.0 L588.6,20.0 L590.2,20.0 L591.9,20.0 L593.5,22.6 L595.2,23.5 L596.8,23.9 L598.5,24.1 L600.1,24.1 L601.8,24.1 L603.4,25.4 L605.1,26.3 L606.7,34.7 L608.4,49.3 L610.0,66.1 L611.7,83.0 L613.3,99.5 L615.0,109.7 L616.6,117.9 L618.3,122.9 L619.9,119.7 L621.6,116.2 L623.2,112.3 L624.9,110.1 L626.5,114.0 L628.2,118.6 L629.8,121.2 L631.5,124.0 L633.1,122.1 L634.8,118.4 L636.4,114.5 L638.1,104.7 L639.7,91.3 L641.4,77.4 L643.0,65.1 L644.7,54.5 L646.3,50.1 L648.0,41.5 L649.6,36.7 L651.3,34.3 L652.9,31.5 L654.6,29.1 L656.2,28.4 L657.9,23.5 L659.5,21.7 L661.2,20.9 L662.8,28.9 L664.5,41.5 L666.1,52.3 L667.8,66.4 L669.4,82.6 L671.1,93.0 L672.7,106.4 L674.4,113.2 L676.0,109.9 L677.7,109.5 L679.3,107.5 L681.0,107.5 L682.6,114.7 L684.3,119.5 L685.9,122.5 L687.6,131.6 L689.2,139.8 L690.9,146.1 L692.5,148.3 L694.2,149.2 L695.8,149.7" class="line"/><text x="535.0" y="142.2" class="tick" text-anchor="middle">before</text><text x="535.0" y="38.2" class="val" text-anchor="middle">after</text><text x="40.0" y="172.0" class="tick" text-anchor="start">confidence that it hears the engine, %, over the last two minutes of the lap</text></svg><figcaption>Confidence through the last two minutes of a real Nordschleife lap, averaged over 2 s. Dashed: before the fix, falling to
+nothing flat out. Solid: after.</figcaption></figure>
+
+<h2>What went wrong, and what caught it</h2>
+<ul>
+  <li><b>The sealed test, used too early.</b> The sealed real onboards were queued before the learning run had been looked at, and
+    were scored with a fault in place (0 to 54 %), then again once it was fixed (73.3 %, the figure above). The record caught it, not
+anyone’s judgement. They have since been scored twice more, by the live page’s report (75.7 %) and its live dash (62.6 %), always
+with what was learned from the eleven alone; every score is written down.</li>
+  <li><b>A truth that wasn’t quite true, then a check that held.</b> With the real gear ratios alone, the race’s speed traps put the
+    gear right only 40 % of the time, and the traps’ lower groups didn’t match the measured gearbox: either a different gearbox at
+    that race, or a trap’s speed and the revs at its sector’s end not being the same moment. Once the heard upshifts and the climb
+    were learned from the team onboards, the same traps put it right 84 % of the time and within one 98 %. The doubt about the
+    traps stays recorded beside the number.</li>
+  <li><b>Wrong in both directions.</b> Early on, the analyser locked onto a third of the true revs and reported itself sure; the first
+    learned shift detector looked nearly useless because its scoring saturated, and was far better once scored properly. Both were
+    found by scoring against the truth, not by reading the code.</li>
+</ul>
+
+<h2>Is this a valid way to engineer?</h2>
+<p>It isn’t new. It is how flight-test programmes verify and validate, how race teams correlate their simulators with the track,
+and how software tests use oracles. What has changed is the economics. An agent makes building and measuring nearly free, so the
+scarce resource is checking, and the work goes into making checking cheap: sources of truth, test data chosen in advance, a
+written record, and readings that show their own uncertainty.</p>
+<p>Its limits are real. It only catches what someone thought to measure. A fluent write-up can still mislead a reader who can’t
+check it. And it needs a discipline an agent will break when it runs ahead, which is why the record, not memory, decides the
+order of things. Expertise still matters: it decides which truths are worth measuring. Here it came from the driver’s seat, from
+a corpus of 470,618 public league race laps, and from the tools and modules borrowed or adapted from the corgido library.</p>
+
+<footer>corgido · built with Claude Code · October 2026. Every chart on this page is drawn from the project’s own numbers; no
+footage from anyone else appears here. The race timing is the organiser’s public sector sheet.</footer>
+
+</main>
+</body>
+</html>
