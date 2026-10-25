@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The record · Telemetry by ear</title>
+<meta name="description" content="The research record behind Telemetry by ear, every part labelled with its provenance." />
+<style>
+:root { --bg: #f7f8fa; --card: #fff; --fg: #161a21; --muted: #5f6b7b; --soft: #8a95a5; --line: #e3e6eb; --accent: #5f6a00; --accent2: #a6b01a;
+  --data2: #9aa4b3; --band: rgb(95 106 0 / 0.08); color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0b0d10; --card: #13161b; --fg: #eff2f5; --muted: #8b95a5; --soft: #5f6878; --line: #232830;
+  --accent: #d0e400; --accent2: #7d8a00; --data2: #4a525e; --band: rgb(208 228 0 / 0.08); color-scheme: dark; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); }
+body { font: 17px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 48px 16px 64px; }
+h1 { font-size: clamp(30px, 6vw, 42px); line-height: 1.12; letter-spacing: -0.02em; margin: 0 0 14px; }
+h2 { font-size: 22px; margin: 48px 0 10px; letter-spacing: -0.01em; }
+h3 { font-size: 17px; margin: 24px 0 6px; }
+p, li { color: var(--fg); }
+.kicker { font: 600 12px/1 ui-monospace, Menlo, monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 0 0 16px; }
+.lede { font-size: 19px; color: var(--muted); }
+.tldr { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 28px 0; }
+.tldr ul { margin: 6px 0 0; padding-left: 20px; }
+figure { margin: 22px 0; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
+figure img { width: 100%; height: auto; border-radius: 6px; display: block; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 14px 0; }
+th, td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+code { font: 14px ui-monospace, Menlo, monospace; background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
+a { color: inherit; text-underline-offset: 2px; }
+footer { margin-top: 56px; font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+.chart { width: 100%; height: auto; display: block; }
+.chart .lab { font-size: 13px; fill: var(--fg); } .chart .val { font: 600 12px ui-monospace, Menlo, monospace; fill: var(--fg); }
+.chart .tick { font: 11px ui-monospace, Menlo, monospace; fill: var(--muted); } .chart .flag { font: 700 11px ui-monospace, Menlo, monospace; fill: var(--fg); }
+.chart .grid { stroke: var(--line); } .chart .axis { stroke: var(--soft); } .chart .ref { stroke: var(--soft); stroke-dasharray: 4 3; }
+.chart .bar { fill: var(--accent); } .chart .bar2 { fill: var(--data2); } .chart .soft { fill: var(--soft); }
+.chart .dot { fill: var(--accent); } .chart .dot2 { fill: none; stroke: var(--soft); stroke-width: 2; }
+.chart .line { fill: none; stroke: var(--accent); stroke-width: 2; } .chart .line2 { fill: none; stroke: var(--soft); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.chart .band { fill: var(--band); }
+.legend { font-size: 13px; color: var(--muted); }
+
+.prov { font: 600 10px/1 ui-monospace, Menlo, monospace; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 4px; padding: 3px 6px; vertical-align: 3px; margin-left: 6px; white-space: nowrap; }
+.prov.generated { background: var(--line); color: var(--fg); } .prov.verified { background: var(--accent); color: var(--bg); }
+.caveat { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; margin: 24px 0; }
+.toc { columns: 2; font-size: 14px; padding-left: 18px; } .toc .l2 { font-weight: 600; } @media (max-width: 600px) { .toc { columns: 1; } }
+.term { border-bottom: 1px dotted var(--muted); cursor: help; position: relative; outline: none; }
+.term .tip { display: none; position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); width: min(320px, 80vw);
+  background: var(--card); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 14px;
+  line-height: 1.45; font-weight: 400; box-shadow: 0 8px 24px rgb(0 0 0 / 0.25); z-index: 10; }
+.term:hover .tip, .term:focus .tip { display: block; }
+.term:focus { border-bottom-style: solid; }
+/* a phone: the definition as a panel along the bottom of the screen, whatever the word's place on the line */
+@media (max-width: 600px) { .term .tip { position: fixed; left: 16px; right: 16px; bottom: 16px; top: auto; transform: none; width: auto; } }
+.muted { color: var(--muted); } main { max-width: 820px; } h3 { margin-top: 32px; }
+</style>
+</head>
+<body>
+<main>
+<p class="kicker"><a href="index.html">Telemetry by ear</a> · the record</p>
+<h1>The gear from onboard sound: the research record</h1>
+<div class="caveat">
+<p><b>Read this first.</b> This record was written by the agent as the work happened, as its first attempt at documenting a fast
+loop: provenance first, purpose second. If this were more than a demo, it would be done the other way round: start from the
+questions the instrument must answer, and keep each record for the decision it supports.</p>
+<p>The speed of agentic coding is the reason it looks like this. Work that once took weeks happened in hours, faster than a person
+can read it. So the record is collected and kept automatically, and every part says what it is:</p>
+<ul>
+<li><span class="prov generated">generated</span> written by the agent, not yet read and confirmed by a person. Most of this page.</li>
+<li><b>Derived</b> numbers: computed by a committed script from committed data; the command is given beside them.</li>
+<li><span class="prov verified">verified</span> read and confirmed by a person, who is named with the date.</li>
+<li><b>Supplied</b> facts: what the human brought from the driver’s seat (below).</li>
+</ul>
+<p>An instrument a team relied on would need this as its audit trail, with every label earned rather than defaulted.</p>
+</div>
+<h2>Supplied by the human</h2>
+<ul><li>The simulated test laps were too fast for their circuits <span class="muted">(seen on the page, 22 October 2026)</span></li><li>A tyre&#x27;s operating window is 80 to 90 °C; 26.8 psi is the usual theoretical optimum <span class="muted">(ACC-specific racing knowledge, 23 October 2026)</span></li><li>Each phase of the tyre test opens with three holds on the rev limiter <span class="muted">(the test&#x27;s design, driven 23 October 2026)</span></li><li>Old versions of the game have a different tyre and physics model: recordings older than two years are left out <span class="muted">(ACC-specific racing knowledge, 24 October 2026)</span></li><li>The dash went blank at the end of the Döttinger Höhe on a real onboard <span class="muted">(seen live, exported, 24 October 2026)</span></li><li>The page reads badly when told the wrong car <span class="muted">(seen live, 24 October 2026)</span></li><li>The one-hour hotstint&#x27;s contents: setup screens, the marker, the timing sheet, the tyre wear (new at 3.0; fronts moderately grained, rears lightly), about 2.46 L a lap by the end <span class="muted">(the run&#x27;s design, driven 24 October 2026)</span></li></ul>
+<h2>Contents</h2>
+<ul class="toc"><li class="l2"><a href="#p1">1. The question</a></li><li class="l2"><a href="#p2">2. The data</a></li><li class="l2"><a href="#p8">3. How it is scored</a></li><li class="l2"><a href="#p9">4. The record</a></li><li class="l3"><a href="#p10">4.1 On synthetic sound: counting shifts, then speed continuity (21 and 22 October)</a></li><li class="l3"><a href="#p11">4.2 The first real sound (22 October)</a></li><li class="l3"><a href="#p12">4.3 The streams: the error is all in the gear, and the anchor was wrong (22 and 23 October)</a></li><li class="l3"><a href="#p13">4.4 The rate bug (23 October)</a></li><li class="l3"><a href="#p14">4.5 Is it the rpm or the tracker? (23 October)</a></li><li class="l3"><a href="#p15">4.6 Where the errors sit (23 October)</a></li><li class="l3"><a href="#p16">4.7 Ideas tested and not kept</a></li><li class="l3"><a href="#p17">4.8 The flex is planned and the benchmark sealed (23 October)</a></li><li class="l3"><a href="#p18">4.9 M0: what an unknown car scores today (23 October)</a></li><li class="l3"><a href="#p19">4.10 M1: an unknown car's gearbox from its class and its own sound (23 October)</a></li><li class="l3"><a href="#p20">4.11 M2, first step: what a shift sounds like (23 October)</a></li><li class="l3"><a href="#p21">4.12 M2, second step: a learned downshift detector (23 October)</a></li><li class="l3"><a href="#p22">4.13 The detected downshifts in the tracker: no gain (23 October)</a></li><li class="l3"><a href="#p23">4.14 Can the downshifts be counted per braking zone? Not exactly (23 October)</a></li><li class="l3"><a href="#p24">4.15 Where the gear goes wrong around a braking zone (23 October)</a></li><li class="l3"><a href="#p25">4.16 M1's confound fixed, and the first unknown cars driven by others (24 October 2026)</a></li><li class="l3"><a href="#p26">4.17 The second list: the known-car gear holds on other drivers, the unknown-car gear doesn't yet (24 October 2026)</a></li><li class="l3"><a href="#p27">4.18 The real #911's gear at its N24 speed traps: 37 % right, the top gears squashed (24 October 2026)</a></li><li class="l3"><a href="#p28">4.19 Heard as the wrong car, the revs read at a fixed multiple; the page now says so (24 October 2026)</a></li><li class="l3"><a href="#p29">4.20 The real 992 GT3 R's gearbox, measured from team onboards; the N24 gear within one at 98 % (24 October 2026)</a></li><li class="l3"><a href="#p30">4.21 Real templates and a real climb: the real 992 GT3 R's gear 74.7 % held out, 73.3 % sealed (24 October 2026)</a></li><li class="l3"><a href="#p31">4.22 The N24 with the learned profile: the gear at the speed traps 84 % right (24 October 2026)</a></li><li class="l3"><a href="#p32">4.23 The owner's hour in the 992 at the Red Bull Ring: the gear 86.8 %, the laps to 0.22 s (24 October 2026)</a></li><li class="l3"><a href="#p33">4.24 The hotstint's tyre truth, and the game's 992 against the real one at the same circuit (24 October 2026)</a></li><li class="l3"><a href="#p34">4.25 The hour as training data: almost nothing gained, which says what data would help (24 October 2026)</a></li><li class="l3"><a href="#p35">4.26 The live analyser itself on the sealed real onboards: gear 76 %, speed within 1 to 4 % (24 October 2026)</a></li><li class="l3"><a href="#p36">4.27 A second listener: a music analyser, never told it was hearing a car, finds the same lap clock (24 October 2026)</a></li><li class="l3"><a href="#p37">4.28 The live dash's gear: right 38 % of the time as shown, 66 % decided on the last 90 s (24 October 2026)</a></li><li class="l3"><a href="#p38">4.29 The screen reader in the browser: a video file checks the dash against its own screen (24 October 2026)</a></li><li class="l3"><a href="#p39">4.30 Extraction: a file's telemetry saved, with the screen as the truth where it shows a HUD (24 October 2026)</a></li><li class="l3"><a href="#p40">4.31 A reader's review, and what it corrected (25 October 2026)</a></li><li class="l2"><a href="#p41">5. What is still open</a></li><li class="l2"><a href="#p42">6. Rerunning it</a></li><li class="l2"><a href="#p43">7. Changes to this record</a></li></ul>
+<p>This records how Onboard's gear reading was built and tested: what data it used, how it was scored, each step taken, why each was taken, what each gave, and what failed. It is written so someone else can rerun every number. The work started on 21 October 2026. This version is from 23 October 2026, and new steps are added at the end of section 4.</p>
+<p>Nothing published describes reading a car's gear from its onboard sound (see <code>docs/COMPETITORS.md</code>). So there is no prior method to compare against. The comparisons here are against chance, against simple rules, and against earlier versions of the same method.</p><h2 id="p1">1. The question <span class="prov generated">generated</span></h2><p>Given only the sound of an onboard recording, which gear is the car in at each moment?</p>
+<p>There are two versions of the question:</p>
+<ul><li>
+<b>A known car:</b> its gear ratios are known (in ACC, measured from the HUD).
+</li><li>
+<b>An unknown car:</b> nothing about it is known except its class (GT3, GT4, Cup). This is "the flex". It is also the
+ real-car case: the Manthey #911 at the N24 has no published ratios.
+</li></ul>
+<p>Speed follows from the gear. With the gear right, the speed from the sound is within 0.5 to 1.4 % of the HUD. With the gear wrong, it is about 20 % off, which is one gear's step. So almost all of the speed error is gear error.</p><h2 id="p2">2. The data <span class="prov generated">generated</span></h2><h3 id="p3">Where the labels come from <span class="prov generated">generated</span></h3><p>ACC on a PS5 has no telemetry output. Its HUD shows the gear, speed, rpm, pedals and the last lap time on every frame. <code>tools/hud.py</code> reads it by template matching, using one hand-labelled layout per HUD (<code>tools/hud/acc-ps5.json</code>). It writes <code>hud.csv</code> at 10 rows a second. That file is the ground truth. It is aligned with the sound because both come from the same video file.</p>
+<p>Known limits of the labels:</p>
+<ul><li>
+<b>Timing is good to 0.1 s</b> (one HUD row). A gear change is known to lie between two rows.
+</li><li>
+<b>Misreads are rare but exist.</b> The McLaren 720S Evo's own dash shows through behind ACC's gear digit, so it read in
+ only 6 % of frames until a fallback was added (now 99.7 %). The <code>last</code> field misreads often enough to need smoothing.
+</li><li>
+<b>The HUD is truth only for ACC.</b> What ACC's sound engine does is not what a real car does. Real-car truth exists only
+ for the #911 at the N24, via the official speed traps.
+</li></ul><h3 id="p4">The development set <span class="prov generated">generated</span></h3><p>There are 47 HUD-labelled recordings, all of ACC and all driven by the owner. The analyser's output for each is in <code>runs/&lt;id&gt;/</code> (PS5 captures, manifest <code>inventory/manifest.csv</code>) and <code>runs-streams/&lt;id&gt;/</code> (the owner's YouTube streams, manifest <code>inventory-streams/manifest.csv</code>). Each folder holds:</p>
+<ul><li>
+<code>hud.csv</code>: the labels;
+</li><li>
+<code>trace.csv</code>: the analyser's moments: rpm, confidence, throttle state, gear, speed;
+</li><li>
+<code>report.json</code>: the analyser's report, including every shift it heard.
+</li></ul>
+<table><thead><tr><th>car</th><th>PS5 clips</th><th>streams</th><th>about</th></tr></thead><tbody><tr><td>Porsche 992 GT3 R</td><td>15</td><td>2</td><td>5.5 h</td></tr><tr><td>BMW M4 GT3</td><td>3</td><td>7</td><td>4 h</td></tr><tr><td>Bentley Continental GT3 (2018)</td><td></td><td>3</td><td>5 h</td></tr><tr><td>Lamborghini Huracán GT3 Evo2</td><td>5 (each under 20 s)</td><td>6</td><td>1 h</td></tr><tr><td>Porsche 911 GT3 Cup (992)</td><td>2</td><td>1</td><td>1.8 h</td></tr><tr><td>Ford Mustang GT3</td><td></td><td>1</td><td>0.4 h</td></tr><tr><td>Mercedes-AMG GT4</td><td></td><td>1</td><td>1.7 h</td></tr><tr><td>Aston Martin Vantage GT4</td><td></td><td>1</td><td>2.1 h</td></tr></tbody></table>
+<p>The PS5 clips are 1920×1088 with Opus sound, as the console saves them. The streams went through YouTube: 1280×720 with AAC sound. The game's audio mix changed between August 2025 and October 2026 (<code>data/engine-clips/acc-audio-settings.json</code>). The two mixes can't be told apart in the analyser's measures, because YouTube's re-encode moves the sound about as much.</p><h3 id="p5">The sealed test set <span class="prov generated">generated</span></h3><p>These are kept apart so the final claim is honest:</p>
+<ul><li>
+<b>The drive/data collection playlist's five cars</b> at the Red Bull Ring: AMG GT3, R8 Evo II, 296 GT3, GT-R GT3, 720S GT3 Evo. They
+ are listed in <code>inventory-drive/manifest.csv</code>. Only their HUDs have been read (<code>runs-drive/</code>). Their sound has not been
+ heard. No profile, tuning or learning uses them.
+</li><li>
+<b>The #911 at the N24 (2026)</b>, from a <a href="https://youtu.be/ZPtUteTGnqA">broadcast-compiled/captured onboard</a>. Its truth is the official speed traps, laid on the
+ recording by <code>tools/n24.py</code>.
+</li></ul>
+<p>The bar was set before any method was tried on them:</p>
+<ul><li>
+exact gear 75 % and within one gear 93 % on the five cars;
+</li><li>
+the heard gear agreeing with the speed-trap clusters at 90 % of traps on the #911.
+</li></ul>
+<p>The test is scored once per method version, and every score is logged, good or bad.</p><h3 id="p6">What the data cannot show <span class="prov generated">generated</span></h3><ul><li>
+<b>One driver.</b> Every development recording is the owner's driving, so a driver who shifts differently (earlier,
+ later, short-shifting, holding gears) is untested. Recordings from other people (<code>inventory-scout/</code>, being gathered)
+ are the remedy.
+</li><li>
+<b>One game.</b> No other sim is in the data.
+</li><li>
+<b>The class.</b> All of it is GT3, GT4 and the Cup. There is no prototype, touring car or road car.
+</li><li>
+<b>Uneven cars.</b> The 992 alone is about a quarter of the hours. Pooled numbers lean towards it, so results are also
+ given per car.
+</li></ul><h3 id="p7">Media and rights <span class="prov generated">generated</span></h3><p>Recordings never enter the repository; they stay on the owner's Mac (<code>clips/</code>, <code>streams/</code>, the PS5 volume). The repository holds derived numbers only: traces, HUD readings, reports, and octave-band energies at 20 ms (<code>research/flex/bands/</code>), from which the sound can't be played back. The Mac runs jobs that need the audio through the job queue (<code>tools/listen.py</code>, <code>jobs/</code>), and pushes back only those derived files.</p><h2 id="p8">3. How it is scored <span class="prov generated">generated</span></h2><ul><li>
+<b>Gear exact:</b> the share of moments where the gear given equals the HUD's gear. A moment counts when the HUD shows
+ 30 km/h or more and a gear from 1 to 7. Moments are pooled across recordings, so long recordings weigh more.
+</li><li>
+<b>Within one gear:</b> the same, allowing a difference of one.
+</li><li>
+<b>Replay vs real run.</b>
+<ul><li>
+<code>npm run gear-replay</code> re-decides the gear from the saved traces in seconds, with no audio. Its traces hold about
+ three moments a second, and <code>--upsample 3</code> interpolates them to the analyser's real rate.
+</li><li>
+A real run puts the audio through the whole analyser on the Mac. It is scored by <code>research/flex/m0_score.py</code>
+ (<code>trace.csv</code> against <code>hud.csv</code>).
+</li><li>
+The two agree to within about one point when the method is unchanged (for example 70.9 % replay against 71.5 % real
+ on the PS5 clips).
+</li></ul>
+</li><li>
+<b>Held out.</b>
+<ul><li>
+<b>Leave one run out</b> (<code>--shifts loo --climb loo</code>): what is learned per car is learned without the run being scored.
+</li><li>
+<b>Leave one car out</b> (<code>--unknown …</code>, and M1/M2's scripts): nothing is learned from the car being scored.
+</li></ul>
+</li><li>
+<b>Baselines.</b>
+<ul><li>
+Guessing among the gears scores about 17 %.
+</li><li>
+Always answering the commonest gear scores 26 to 27 %.
+</li><li>
+Without ratios and without learning, the method itself scores 17 to 22 % (M0, section 4.11). That is the baseline
+ for an unknown car.
+</li></ul>
+</li></ul><h2 id="p9">4. The record <span class="prov generated">generated</span></h2><p>Each step gives four things: the problem seen, what was reached for and why, what it gave, and what it changed or ruled out. Numbers are the ones measured at the time. Where a number from that time no longer reproduces from today's code, this is said.</p><h3 id="p10">4.1 On synthetic sound: counting shifts, then speed continuity (21 and 22 October) <span class="prov generated">generated</span></h3><p><b>Problem.</b> The analyser hears the engine's rpm and the shifts (jumps of a gear's step in the rpm). The first gear reading counted those shifts.</p>
+<p><b>Reached for.</b> First, counting with upshift-ratio checks. Then, for a car with a known gearbox, the speed's continuity.</p>
+<ul><li>
+In each gear the rpm implies a speed, and the speed can't jump.
+</li><li>
+A <span class="term" tabindex="0" aria-describedby="def-viterbi">Viterbi<span class="tip" role="tooltip" id="def-viterbi">A way to find the most likely sequence of hidden states from noisy clues. Here the hidden states are the gears and the clues are the revs heard: at every moment it keeps only the best path into each gear, so the whole run&#x27;s gear sequence comes out at the end without trying every combination. Andrew Viterbi devised it in 1967 for decoding noisy radio signals; phones and speech recognition use it every day.</span></span> over the gears picks the sequence that keeps the speed continuous across the moments the rpm is known.
+</li><li>
+A missed shift still shows, as a jump of one gear's step.
+</li><li>
+It is anchored by the speed the rpm's climb implies on full power (power = mass × acceleration × speed, less drag),
+ because continuity alone drifts to the low gears, where every jump is smaller.
+</li></ul>
+<p><b>Why.</b> A count drifts: one missed shift leaves every later moment one gear off until something resets it.</p>
+<p><b>Gave.</b></p>
+<ul><li>
+On synthetic laps: 94 % without the team's ratios.
+</li><li>
+On the first ACC batch with measured gearboxes, the count read the gear right only 19 to 41 % of the time. A third of
+ the HUD's gear changes had no heard shift (downshifts under braking), and each left the count a gear high.
+</li><li>
+Speed continuity on five clips' traces gave 46 to 63 % (from 26 to 37 %). Commit <code>37f0a3d</code>.
+</li></ul>
+<p><b>Changed.</b> Gear reading moved from counting to continuity, for known cars.</p><h3 id="p11">4.2 The first real sound (22 October) <span class="prov generated">generated</span></h3><p><b>Problem.</b> A 13-minute tab recording of the #911's N24 start was the first real engine.</p>
+<p><b>Found.</b></p>
+<ul><li>
+The rpm sometimes locked at exactly a third of the true value, with high confidence. A four-stroke engine sounds at
+ every half-order, and a third of the rpm has all of them as its own orders.
+</li><li>
+Downshifts a third of a second apart were merged into one jump, which then failed the ratio check.
+</li></ul>
+<p><b>Changed.</b> Both were fixed in the analyser (<code>docs/ONBOARD.md</code>, "Every half-order"). This is where it was first seen that downshifts under braking are the weak point. Section 4.13 measures it.</p><h3 id="p12">4.3 The streams: the error is all in the gear, and the anchor was wrong (22 and 23 October) <span class="prov generated">generated</span></h3><p><b>Problem.</b> The 22 streams were heard with each car's gearbox known.</p>
+<ul><li>
+The rpm came through YouTube 0.5 to 1.0 % off the HUD, as good as the PS5's.
+</li><li>
+The gear was right only 27 to 69 % of the time.
+</li><li>
+The errors were pulled towards the middle gears: true 1st read as 2nd or 3rd, and true 5th and 6th read as 4th.
+</li></ul>
+<p><b>Reached for.</b> The anchor. A slow climb at low speed read as a speed far too high (+83 % at 40 to 80 km/h), so the gear came out one too high. In ACC the tyres, not the engine, limit acceleration below about 150 km/h, at about 5 m/s² (measured on the HUD). So the anchor got a traction cap (<code>tractionMs2</code> on the ACC profiles).</p>
+<p><b>Gave.</b></p>
+<ul><li>
+Streams: 37 % to 56 % (the cap was chosen on the streams).
+</li><li>
+PS5 clips: 43 % to 63 %. The PS5 clips played no part in choosing it.
+</li><li>
+Commit <code>ba0a2e2</code>.
+</li></ul><h3 id="p13">4.4 The rate bug (23 October) <span class="prov generated">generated</span></h3><p><b>Problem.</b> The full run on the audio scored below the replay: 38.6 % against 51.7 % on the same streams. The tracker summed its costs per moment against a fixed cost per shift. The analyser runs at about three times the trace's rate, so at the real rate the cost of a shift was three times cheaper relative to the evidence. Replaying at three times the rate reproduced the drop: 28.5 %.</p>
+<p><b>Reached for.</b> Deciding the gear on moments 0.3 s apart, whatever the rate, with the climb measured over 0.3 s.</p>
+<p><b>Gave.</b> Streams 46.6 % at three times the rate and 46.4 % at five; PS5 57.0 %. Commit <code>12864eb</code>.</p>
+<p><b>Changed.</b> From here on, every replay is run with <code>--upsample 3</code>. The replay scores the tracker, so it must run at the tracker's real rate.</p><h3 id="p14">4.5 Is it the rpm or the tracker? (23 October) <span class="prov generated">generated</span></h3><p><b>Problem.</b> Was the weak part hearing the rpm, or turning rpm into gear?</p>
+<p><b>Test.</b> Feed the HUD's own rpm into the tracker (<code>--hud-rpm</code>). That gave 60 %. Meanwhile 90 % of the heard rpm is within 3 % of the HUD's. So the tracker was the limit, in particular its absolute anchor: continuity alone can't tell a path from the same path one gear off.</p>
+<p><b>Reached for.</b> Learning three things per car from the HUD footage, held out one run at a time:</p>
+<ul><li>
+<b>The climb:</b> the car's acceleration on full power at each speed (median, 10 km/h bins). In each gear the rpm's rate
+ of change is held against a(v)/v. On its own this picks the gear at 74 % of full-power moments (leave one run out).
+</li><li>
+<b>The upshift drops:</b> the ratio heard at each upshift, per gear pair, with its spread. The heard drop is larger than
+ the gearbox's true step, most of all in the low gears, and tighter in the high gears (log spread 0.036 at 1→2 and
+ 0.005 at 5→6). So a heard shift says which way the gear went and, by its drop, from which gear.
+</li><li>
+<b>Gaps:</b> across stretches with no reliable rpm (heavy braking), a drop of several gears costs nothing extra beyond
+ one gear per half second.
+</li></ul>
+<p><b>Why these.</b> They replace guessed physics (power, mass, drag), which put the anchor's speed 12 % off at the median moment, with measured behaviour. They also turn the heard shifts into evidence for the gear. Before, the heard shifts were not used at all.</p>
+<p><b>Gave</b> (replay at the real rate):</p>
+<table><thead><tr><th></th><th>physics only</th><th>learned, run left out</th><th>learned from all</th></tr></thead><tbody><tr><td>streams (22)</td><td>46.6 %</td><td>58.0 %</td><td>66.0 %</td></tr><tr><td>PS5 clips (25)</td><td>57.0 %</td><td>70.9 %</td><td>70.9 %</td></tr></tbody></table>
+<p>The tracker's weights (<code>SHIFT_EVIDENCE</code> in <code>src/analysis/track.ts</code>) were chosen by sweeps on the streams with runs left out, for example <code>climbSigma</code> 0.25 and <code>gapPerShift</code> 0.5. The PS5 clips served as the check. Commit <code>ca28e80</code>.</p>
+<p>Real runs with the learned profiles (the listener's jobs ps5-redo-2 and streams-redo-3):</p>
+<ul><li>
+PS5 71.5 % exact, 90.8 % within one;
+</li><li>
+streams 67.2 % exact, 88.6 % within one.
+</li></ul><h3 id="p15">4.6 Where the errors sit (23 October) <span class="prov generated">generated</span></h3><p><b>Test.</b> The PS5 HUD's pedal fields were read (throttle, brake, ABS by the brake bar's colour), and the gear was scored by what the pedals were doing.</p>
+<table><thead><tr><th>HUD</th><th>moments</th><th>gear right</th></tr></thead><tbody><tr><td>full throttle</td><td>42,134</td><td>90.1 %</td></tr><tr><td>part throttle</td><td>10,490</td><td>53.9 %</td></tr><tr><td>coasting</td><td>4,214</td><td>54.5 %</td></tr><tr><td>braking, no ABS</td><td>5,767</td><td>38.1 %</td></tr><tr><td>braking, with ABS</td><td>6,762</td><td>31.7 %</td></tr></tbody></table>
+<p><b>What it showed.</b> The gear is good on power and poor under braking. Every braking zone has two good anchors around it: the gear at the end of the straight, and the gear once full throttle returns. Counting the downshifts between those two is bounded at both ends, so a missed downshift can't carry on. This is the owner's "make it count" idea, used where counting is safe. It became M3.</p><h3 id="p16">4.7 Ideas tested and not kept <span class="prov generated">generated</span></h3><ul><li>
+<b>Deceleration names the gear?</b> Learned like the climb, it picks the gear at only 34 % of moments off power. Not kept.
+</li><li>
+<b>Sector times check the gear?</b> Race timing lines up with the recording to 0.1 % of a sector's length. But a sector
+ with wrong gears in it is not further off than the rest: each sector spans several gears and the errors cancel. Timing
+ can calibrate the speed's overall scale, not find a wrong gear. Not kept.
+</li><li>
+<b>Gear whine?</b> A straight-cut gearbox whines at a mesh order that differs per gear, which would name the gear
+ directly. <code>tools/whine.py</code> looked for such lines per HUD gear in three streams and found no line tied to road speed.
+ Gear-specific lines show only in the top gears (the 992 in 6th has one at order 18.2, 20 dB above the floor). So in
+ ACC's sound, as streamed, whine is at most a tie-breaker. A real straight-cut box is louder, and the N24 broadcast is
+ the place to look. Open.
+</li></ul><h3 id="p17">4.8 The flex is planned and the benchmark sealed (23 October) <span class="prov generated">generated</span></h3><p>The question became the unknown car, and the benchmark (section 2) was sealed before any unknown-car method was tried. The plan is in <code>docs/ONBOARD-PLAN.md</code> ("The flex"): class priors (M1), a learned shift detector (M2), counting between anchors and laps voting (M3), then the sealed test once (M4).</p>
+<p>The rule that guided it was "the class, never the car": every prior is pooled over the other cars of the class.</p><h3 id="p18">4.9 M0: what an unknown car scores today (23 October) <span class="prov generated">generated</span></h3><p><b>Question.</b> Does the ratio-free path score better than the ratio tracker? That path counts the gear, then lets physics decide, with no gearbox. It was the earlier "Manthey setting", and on one race (the TiTan Cup at wet Laguna Seca) it had looked better.</p>
+<p><b>Test.</b> All 47 clips were heard again without the profiles' ratios (the listener's jobs blind-ps5-1 and blind-streams-1, in <code>runs-blind/</code> and <code>runs-streams-blind/</code>), and scored with <code>python3 research/flex/m0_score.py</code>.</p>
+<table><thead><tr><th></th><th>exact</th><th>within one</th><th>speed error (median)</th></tr></thead><tbody><tr><td>PS5, ratio tracker</td><td>72.4 %</td><td>90.8 %</td><td>0.7 %</td></tr><tr><td>PS5, ratio-free</td><td>21.8 %</td><td>63.6 %</td><td>13.5 %</td></tr><tr><td>streams, ratio tracker</td><td>68.2 %</td><td>88.6 %</td><td>1.0 %</td></tr><tr><td>streams, ratio-free</td><td>17.1 %</td><td>51.8 %</td><td>16.4 %</td></tr></tbody></table>
+<p><b>What it showed.</b></p>
+<ul><li>
+Every car does worse without ratios. Only top gear holds up (49 to 61 %).
+</li><li>
+The ratio-free path's two parts both fail: the count drifts at missed shifts, and the physics' power and mass guesses
+ are too rough to decide the gear.
+</li><li>
+A count pinned to ±1 per heard shift scored 15 to 19 %. That was measured inline and not kept as a script.
+</li><li>
+<b>The TiTan race wasn't a sign of anything about the method.</b> It is stream 7, and its HUD gearing matches the PS5
+ Cup clips within about 1 % in every gear. So the profile was the right car (the first guess had been a wrong Cup
+ generation). The likelier reason it looked better there is a dry climb curve meeting a wet track.
+</li></ul>
+<p><b>Changed.</b></p>
+<ul><li>
+About 20 % exact is the baseline for an unknown car.
+</li><li>
+The ratio tracker can't run on an unknown car at all, because it needs the gearbox.
+</li><li>
+The plan replaces both parts of the ratio-free path: the count, with a learned detector (M2) and anchored counting
+ (M3); the physics guesses, with class priors (M1).
+</li></ul><h3 id="p19">4.10 M1: an unknown car's gearbox from its class and its own sound (23 October) <span class="prov generated">generated</span></h3><p><b>Idea.</b> Race gearboxes are laid out so that each gear is left at a similar speed, whatever the car. Out of 1st, the GT3s here shift at 101 to 109 km/h (the Mustang at 122). What differs between cars is the rev limit, and the sound gives that, as the rpm the driver upshifts at. So an unknown car's km/h per 1000 rpm in gear g is the class's speed at the upshift out of g (the median over the other cars of the class, from their HUDs) divided by the recording's heard upshift rpm.</p>
+<p><b>Why.</b> It needs nothing from the car except its sound, and one number per class per gear.</p>
+<p><b>Gearbox.</b> <code>python3 research/flex/m1_gearbox.py --out research/flex/k-estimates.json</code>, leaving one car out:</p>
+<ul><li>
+1.8 % off at the median, and within 10 % for 90 % of gears;
+</li><li>
+233 of 247 gears named right.
+</li><li>
+Misses: the two GT4s (only one other GT4 to learn from, and they differ), the Mustang (12 % taller than the class) and
+ the Cup (7 to 12 % shorter).
+</li></ul>
+<p><b>Gear</b> (replay as an unknown car: the estimated gearbox, the climb and upshift drops pooled over the other cars of the class, and the gear count and rev limit from the estimate):</p>
+<table><thead><tr><th></th><th>ratio-free (M0)</th><th>unknown-car mode</th><th>the car's own profile</th></tr></thead><tbody><tr><td>PS5 clips</td><td>21.8 %</td><td>68.4 %</td><td>72.4 %</td></tr><tr><td>streams</td><td>17.1 %</td><td>52.5 %</td><td>68.2 %</td></tr></tbody></table>
+<p>By car, held out: 992 GT3 R 70.8 %, Huracán 70.2 %, M4 65.1 %, Bentley 58.6 %, Cup 47.8 %, AMG GT4 39.7 %, Mustang 37.1 %, Aston GT4 19.5 %. The GT3s and the Cup together score 63.3 %.</p>
+<p><b>Tried and failed: refitting the scale from the climb</b> (<code>--refit</code>).</p>
+<ul><li>
+<b>Why it was tried:</b> the worst cars are those whose gearing estimate is off by a uniform scale.
+</li><li>
+<b>Result:</b> 41.4 % (streams) and 47.2 % (PS5), worse than not refitting, and the fitted scales ran to the edges of the
+ range searched.
+</li><li>
+<b>Reason:</b> a uniform change of scale and a relabelling of the gears cancel out. Scaled up 15 %, the same stretch reads
+ one gear lower, and the climb agrees just as well. The scale can't be identified from the climb. An unusually geared
+ car needs another clue, such as the speed at its shifts or the downshift pattern (M2).
+</li><li>
+The option stays in the code, off.
+</li></ul>
+<p><b>A confound, still open.</b> These traces were heard by the analyser with each car's own profile (cylinder count, rev range, shift band). A truly unknown car would be heard with a class profile. Before the sealed test, the development set is to be heard again that way, and this table redone.</p><h3 id="p20">4.11 M2, first step: what a shift sounds like (23 October) <span class="prov generated">generated</span></h3><p><b>Question.</b> The plan listed possible "affirmers" of a shift beyond the pitch jump: the ignition cut on upshifts, the auto-blip on downshifts, the gearbox's clunk. Which of them are actually in the sound?</p>
+<p><b>Reached for.</b> Averaging, the cheapest test there is. <code>tools/shift_probe.py</code> takes every HUD gear change at speed in a recording. It times each by the analyser's heard shift when one lies within 0.3 s, and otherwise by the HUD. It then averages three envelopes at 2 ms resolution from -0.6 to +0.6 s around each change, in dB relative to the level before:</p>
+<ul><li>
+the whole level;
+</li><li>
+a high band, 2 to 6 kHz;
+</li><li>
+a low band, 60 to 400 Hz.
+</li></ul>
+<p>Groups: upshifts heard and missed, downshifts heard and missed, and the same number of random moments at speed. It was run on 3 PS5 clips and 4 streams (jobs probe-*). Results are in <code>research/flex/probe/&lt;run&gt;/probe.json</code>.</p>
+<table><thead><tr><th>run</th><th>upshifts heard</th><th>downshifts heard</th><th>missed downshifts: high band's rise (dB, ms after HUD)</th><th>random moments</th></tr></thead><tbody><tr><td>PS5 2 (M4)</td><td>92 %</td><td>24 %</td><td>+1.6 at 196</td><td>+0.1</td></tr><tr><td>PS5 7 (992)</td><td>97 %</td><td>31 %</td><td>+2.5 at 74</td><td>+0.2</td></tr><tr><td>PS5 22 (Cup)</td><td>86 %</td><td>43 %</td><td>+1.8 at 144</td><td>+0.1</td></tr><tr><td>stream 1 (Bentley)</td><td>65 %</td><td>18 %</td><td>+2.0 at 178</td><td>+0.1</td></tr><tr><td>stream 2 (Huracán)</td><td>97 %</td><td>35 %</td><td>+2.9 at 164</td><td>+0.2</td></tr><tr><td>stream 3 (Mustang)</td><td>83 %</td><td>22 %</td><td>+2.1 at 176</td><td>+0.2</td></tr><tr><td>stream 13 (M4)</td><td>97 %</td><td>26 %</td><td>+2.5 at 238</td><td>+0.2</td></tr></tbody></table>
+<p>The rise was measured on 20 ms smoothed medians, as the highest point from 0 to +350 ms. The random column is the same measure on the random moments.</p>
+<p><b>What it showed.</b></p>
+<ul><li>
+<b>The gap is the downshifts.</b> Most upshifts are heard, but only 18 to 43 % of downshifts. The analyser listens for a
+ jump in pitch, and under braking the rpm is already moving.
+</li><li>
+<b>Missed downshifts leave a mark anyway.</b> In all seven runs, the high band rises 1.6 to 2.9 dB, 75 to 240 ms after the
+ HUD changes gear. That is the blip and the rpm climbing into the lower gear.
+</li><li>
+<b>Upshifts:</b> the level dips 1.4 to 3.7 dB around the heard shift.
+</li><li>
+<b>No sharp cut or clunk shows.</b> The HUD's 0.1 s timing would average away a click of a few ms. Chasing it needs
+ alignment on each event, which isn't worth doing before the downshift mark is used.
+</li></ul>
+<p><b>Changed.</b> M2's target became the downshifts. The upshifts are already heard.</p><h3 id="p21">4.12 M2, second step: a learned downshift detector (23 October) <span class="prov generated">generated</span></h3><p><b>Reached for.</b> A classifier on the shape of the sound around each moment, trained on the HUD's gear changes and tested leave one car out.</p>
+<p><b>Design and why:</b></p>
+<ul><li>
+<b>Material.</b> Each development recording's energy in eight octave bands (60 Hz to 12 kHz), every 20 ms, as uint8 dB
+ (<code>tools/shift_probe.py --bands-all</code>; 23 MB for all 47 recordings in <code>research/flex/bands/</code>).
+<ul><li>
+Octave bands at 20 ms keep the blip's spectral shape and timing, and can't be played back as the sound.
+</li><li>
+Keeping the bands in the repository lets the detector be retrained here in minutes rather than via a Mac job each
+ time. The owner agreed to the size.
+</li></ul>
+</li><li>
+<b>Steps and labels.</b> Every 0.1 s step of the HUD at over 40 km/h is labelled up, down or nothing by the HUD's gear
+ change in it.
+<ul><li>
+Steps beside a change (within two rows) are not used as negatives, since the HUD's timing is good to one row.
+</li><li>
+Gear changes of more than one are dropped.
+</li></ul>
+</li><li>
+<b>Features.</b> The eight bands from -0.6 to +0.6 s around the step, averaged into 40 ms bins: 240 numbers. Each band is
+ relative to its own level in the first 0.2 s, so the mix and the recording's gain drop out. That matters because a
+ wild user's mix is unknown (section 2).
+</li><li>
+<b>Model.</b> Multinomial logistic regression in numpy, with balanced class weights, L2 regularisation and Adam.
+<ul><li>
+It is the simplest model that can weigh a shape.
+</li><li>
+It is 723 weights, so it ports to the browser page as a dot product.
+</li><li>
+A bigger model is only worth it if this one falls short.
+</li></ul>
+</li><li>
+<b>Training data.</b> All positives, and 8 % of the nothing-steps.
+</li><li>
+<b>Testing.</b> Leave one car out: trained on the other seven cars, run over every step of the held-out car.
+</li></ul>
+<p><b>The first scoring was wrong.</b></p>
+<ul><li>
+The first run reported upshifts found 1 to 3 % of the time and downshifts 2 to 38 %.
+</li><li>
+Checking one held-out car showed the model was fine. On the Huracán, a downshift step scores above a non-shift step
+ 98 to 99 % of the time (AUC 0.98 to 0.99).
+</li><li>
+The scoring was at fault. The cut for "one false alarm a minute" was taken on probabilities, which saturate near 1
+ and tie, so the cut landed above most true events.
+</li><li>
+The scoring now uses the log of the odds against "nothing". It reports AUC, plus the share of events found at 0.5, 1
+ and 2 false alarms a minute.
+</li></ul>
+<p><b>Gave, first run</b> (labels on the HUD's clock; <code>research/flex/m2-detector.json</code>):</p>
+<table><thead><tr><th></th><th>events</th><th>heard</th><th>AUC</th><th>found by the detector, 1 false alarm a minute</th><th>heard or found, 1 / 2 a minute</th></tr></thead><tbody><tr><td>downshifts</td><td>11,492</td><td>32.6 %</td><td>0.825</td><td>15.2 %</td><td>42.1 % / 45.7 %</td></tr><tr><td>upshifts</td><td>11,815</td><td>88.8 %</td><td>0.744</td><td>1.3 %</td><td>89.1 % / 89.3 %</td></tr></tbody></table>
+<p>By car the downshift AUC ran from 0.98 (Huracán, Mustang) and 0.97 (Cup) down to 0.75 (M4) and 0.53 (AMG GT4, chance).</p>
+<p><b>Why the AMG GT4 failed: the labels' clock.</b></p>
+<ul><li>
+<b>The question.</b> Was the AMG GT4 at chance because its sound differs, or because of its labels?
+</li><li>
+<b>The test.</b> For each run, the median gap between each HUD upshift and the analyser's nearest heard upshift.
+<ul><li>
+Most runs: the heard shift comes 70 to 220 ms after the HUD's. PS5 clips 70 to 150 ms; streams 110 to 220 ms.
+</li><li>
+Stream 18, the only AMG GT4 recording: 190 ms before.
+</li></ul>
+</li><li>
+<b>What it means.</b> The sound and the HUD's digit are not offset the same way in every recording (the capture and the
+ YouTube encode both play a part). A model that looks at a fixed window around the HUD's step sees the AMG's blip about
+ 300 ms away from where it learned to expect it.
+</li><li>
+<b>The fix</b> (<code>--align</code>):
+<ul><li>
+each run's steps are moved onto its own sound's clock, by its own median offset less 120 ms (the typical one);
+</li><li>
+the offset comes from the run's heard upshifts and its HUD only, so it corrects the labels, not the detector;
+</li><li>
+five of the Huracán's 20-second PS5 clips have too few upshifts to measure it and stay as they were.
+</li></ul>
+</li></ul>
+<p><b>Gave, aligned</b> (<code>research/flex/m2-detector-aligned.json</code>; the run that writes <code>m2-detections.json</code>):</p>
+<table><thead><tr><th></th><th>heard</th><th>AUC</th><th>found, 1 a minute</th><th>heard or found, 1 / 2 a minute</th></tr></thead><tbody><tr><td>downshifts</td><td>32.6 %</td><td>0.903</td><td>22.4 %</td><td>45.8 % / 49.8 %</td></tr><tr><td>upshifts</td><td>90.3 %</td><td>0.834</td><td>5.1 %</td><td>90.7 % / 91.2 %</td></tr></tbody></table>
+<p>Downshift AUC by car, before and after aligning:</p>
+<table><thead><tr><th>car</th><th>before</th><th>after</th></tr></thead><tbody><tr><td>AMG GT4</td><td>0.53</td><td>0.96</td></tr><tr><td>992</td><td>0.79</td><td>0.94</td></tr><tr><td>Aston GT4</td><td>0.84</td><td>0.93</td></tr><tr><td>Cup</td><td>0.97</td><td>0.98</td></tr><tr><td>Huracán</td><td>0.98</td><td>0.99</td></tr><tr><td>Bentley</td><td>0.92</td><td>0.92</td></tr><tr><td>M4</td><td>0.75</td><td>0.77</td></tr><tr><td>Mustang</td><td>0.98</td><td>0.96</td></tr></tbody></table>
+<ul><li>
+<b>The M4 stays weak</b> for a reason not yet known.
+</li><li>
+<b>The upshift detector adds little.</b> The analyser already hears nine upshifts in ten.
+</li></ul>
+<p><code>m2-model.json</code> is the model trained on all eight cars, unaligned. It is not yet used anywhere.</p><h3 id="p22">4.13 The detected downshifts in the tracker: no gain (23 October) <span class="prov generated">generated</span></h3><p><b>Test.</b> The detector's downshifts were added to the analyser's heard shifts as tracker evidence. Each run's detections come from the model that never saw its car. A detection is added when its score reaches <code>--det-min</code> and no heard downshift lies within 0.3 s. Replay: learned, run left out.</p>
+<table><thead><tr><th>det-min</th><th>PS5 clips</th><th>streams</th></tr></thead><tbody><tr><td>none</td><td>70.9 %</td><td>59.2 %</td></tr><tr><td>1</td><td>68.9 %</td><td>58.3 %</td></tr><tr><td>2</td><td>69.9 %</td><td>58.6 %</td></tr><tr><td>3</td><td>70.1 %</td><td>58.9 %</td></tr><tr><td>5</td><td>70.7 %</td><td>59.1 %</td></tr><tr><td>8</td><td>70.8 %</td><td>59.1 %</td></tr></tbody></table>
+<p>At every threshold the gear is slightly worse, and the more detections are added, the worse it gets. Within the tracker as it stands, more downshift evidence doesn't help. Sections 4.14 and 4.15 look for why.</p><h3 id="p23">4.14 Can the downshifts be counted per braking zone? Not exactly (23 October) <span class="prov generated">generated</span></h3><p><b>Question.</b> M3's plan was to count the downshifts between the anchors before and after each braking zone. Are the counts good enough?</p>
+<p><b>Test.</b> <code>python3 research/flex/m3_zone_count.py --det-min 3</code>.</p>
+<ul><li>
+A zone is a fall of 30 km/h or more from a peak of the HUD's speed to the next low.
+</li><li>
+The true count is the HUD's gear at the peak less its gear at the low.
+</li><li>
+The heard (and detected) downshifts are counted from 0.5 s before the zone to 0.5 s after.
+</li></ul>
+<table><thead><tr><th>over 4,895 zones (true count 2.17 on average)</th><th>exact</th><th>within one</th><th>mean error</th></tr></thead><tbody><tr><td>heard</td><td>28.5 %</td><td>62.0 %</td><td>-1.01</td></tr><tr><td>heard and detected (det-min 3)</td><td>32.2 %</td><td>71.1 %</td><td>-0.28</td></tr></tbody></table>
+<ul><li>
+<b>The detector takes away most of the undercount</b> (one downshift short per zone, on average, down to a quarter).
+</li><li>
+<b>The count is still wrong two times in three.</b> So the sound alone can't give the count. In M3, the anchors have to
+ carry the total, with the heard and detected downshifts placing it in time.
+</li></ul><h3 id="p24">4.15 Where the gear goes wrong around a braking zone (23 October) <span class="prov generated">generated</span></h3><p><b>Test.</b> <code>python3 research/flex/m3_phases.py</code>, on the replay's gears (learned, run left out; <code>--dump</code>), with moments counted by phase around each zone:</p>
+<table><thead><tr><th>phase</th><th>moments</th><th>right</th><th>too high</th><th>too low</th></tr></thead><tbody><tr><td>1 s before</td><td>48,662</td><td>64.9 %</td><td>7.0 %</td><td>28.2 %</td></tr><tr><td>zone, 1st third</td><td>53,290</td><td>40.1 %</td><td>35.7 %</td><td>24.2 %</td></tr><tr><td>zone, 2nd third</td><td>51,909</td><td>29.0 %</td><td>55.1 %</td><td>15.9 %</td></tr><tr><td>zone, last third</td><td>50,117</td><td>34.6 %</td><td>58.7 %</td><td>6.7 %</td></tr><tr><td>0 to 1.5 s after the low</td><td>72,564</td><td>51.7 %</td><td>43.5 %</td><td>4.8 %</td></tr><tr><td>1.5 to 4 s after</td><td>120,906</td><td>69.0 %</td><td>24.7 %</td><td>6.2 %</td></tr></tbody></table>
+<p><b>What it showed.</b></p>
+<ul><li>
+<b>The tracker lags.</b> Through the zone and out of the corner the gear is mostly too high: it trails the real
+ downshifts, and is still too high a quarter of the time 1.5 to 4 s after the slowest point.
+</li><li>
+<b>The likely reason for 4.13</b> (from the code, not yet tested on its own). A downshift heard or detected in the
+ middle of the zone says the gear fell. But the tracker only decides at moments where it trusts the rpm (confidence
+ 0.2 or more, <code>gearByContinuity</code>), and under braking those are few (section 4.5: a third of moments are unsure,
+ mostly braking). So it holds the gear
+ through the zone and settles it at the next sure moments, where the climb's anchor decides. More evidence in the
+ middle changes little.
+</li><li>
+<b>The second before braking is too low 28 % of the time.</b> This is flat-out top gear read one down, the misreading
+ already seen with the throttle (section 4.6).
+</li></ul>
+<p><b>Changed.</b> M3's first target is no longer counting. It is the decision at the end of the zone, where the gear is too high: the gear at the low should be the gear before the zone less the downshifts heard and detected, held against the climb's anchor as the throttle comes back.</p><h3 id="p25">4.16 M1's confound fixed, and the first unknown cars driven by others (24 October 2026) <span class="prov generated">generated</span></h3><p><b>The confound.</b> M1's traces had been heard with each car's own profile (cylinders, rev range, shift band). An unknown car can only be heard with a generic one. So the whole development set was heard again with the generic any-four-stroke profile (<code>tools/batch.py --as any-four-stroke</code>; runs-any, runs-streams-any).</p>
+<p><b>The rpm</b> (<code>python3 research/flex/rpm_compare.py runs runs-any inventory/manifest.csv</code>): within 3 % of the HUD at 80.5 % of moments against 82.6 % with the own profiles (PS5), and 75.4 % against 77.2 % (streams).</p>
+<ul><li>
+<b>The Huracán's V10 loses most:</b> 64 to 66 % against 76 to 83 %.
+</li><li>
+<b>The M4 slips an octave</b> 3 to 4 % of the time.
+</li><li>
+<b>The Bentley and Mustang do better</b> with the generic profile.
+</li></ul>
+<p><b>The gearbox and gear,</b> from these traces (<code>m1_gearbox.py --sets runs-any:…,runs-streams-any:…</code>):</p>
+<ul><li>
+<b>The gearbox estimate:</b> 1.9 % off at the median (from 1.8), 234 of 247 gears named.
+</li><li>
+<b>The unknown-car gear:</b> 68.7 % (PS5) and 51.2 % (streams), against 68.4 % and 52.5 % from the own-profile traces.
+</li></ul>
+<p>So the confound costs about nothing, and M1's numbers stand.</p>
+<p><b>Classes.</b> The classes are now GT3, GT4, GT2 and one-make cars ("cup": the Cup cars, Challenge, Super Trofeo, M2 CS). A class with no other car heard learns from GT3's pool. Splitting the 911 Cup out of GT3's pool moves the PS5 replay from 68.4 to 68.2 %.</p>
+<p><b>Other drivers' cars as unknown cars.</b> These are the scout's recordings uploaded within 2 years. The class priors are pooled from the owner's cars' HUDs (<code>m1_gearbox.py --sets runs-scout-any:… --pool runs:…,runs-streams:…</code>), and the replay uses <code>npm run gear-replay -- runs-scout-any … --unknown research/flex/k-estimates-scout.json</code>:</p>
+<table><thead><tr><th>recording</th><th>car</th><th>gear right</th><th>note</th></tr></thead><tbody><tr><td>27</td><td>992 GT3 R</td><td>61.8 %</td><td>66.6 % with the 992's own profile</td></tr><tr><td>19</td><td>Huracán ST</td><td>68.3 %</td><td>a short read</td></tr><tr><td>21</td><td>Lexus RC F GT3</td><td>52.8 %</td><td>a short read</td></tr><tr><td>18</td><td>NSX GT3 Evo</td><td>50.9 %</td><td>geared 3 to 7 % taller than the class</td></tr><tr><td>17</td><td>NSX GT3 Evo</td><td>42.1 %</td><td>the same car, a 78-minute race</td></tr><tr><td>2</td><td>Aston Martin V8 Vantage GT3</td><td>30.6 %</td><td>its upshift heard 12 % high (7,995 against the HUD's 7,155 rpm)</td></tr><tr><td>all</td><td></td><td>46.1 % of 82,950 moments</td><td></td></tr></tbody></table>
+<ul><li>
+<b>The gearbox estimate:</b> 5.8 % off at the median, 22 of 27 gears named. That is worse than on the owner's cars (1.9 %).
+</li><li>
+<b>Two failure kinds:</b>
+<ul><li>
+<b>The heard upshift rpm.</b> The generic profile misheard the Aston's engine, so every gear's estimate came out 10 to
+ 18 % short.
+</li><li>
+<b>Cars geared off the class pattern:</b> the NSX.
+</li></ul>
+</li><li>
+<b>What would help:</b>
+<ul><li>
+<b>Hearing the engine's layout first</b> (the band-work idea), so the profile is right;
+</li><li>
+<b>more cars in the pools.</b> The scout's second list (30 recordings, 14 of them library cars driven by others) is
+ being heard.
+</li></ul>
+</li></ul><h3 id="p26">4.17 The second list: the known-car gear holds on other drivers, the unknown-car gear doesn't yet (24 October 2026) <span class="prov generated">generated</span></h3><p>The scout's second list: 30 recordings by other drivers (32 channels, all uploaded within 2 years, so current ACC), 27 with the HUD, about 21.5 hours (<code>inventory-scout/fetched-2/</code>).</p>
+<p><b>Library cars driven by others, heard with their own profiles</b> (<code>runs-scout2</code>; <code>python3 research/flex/m0_score.py runs-scout2 runs-scout2 inventory-scout/fetched-2/manifest.csv runs-scout2-any</code>): 14 recordings of 6 cars, 95,437 moments.</p>
+<ul><li>
+<b>In all:</b> 67.9 % exact and 89.3 % within one, against 68.2 % and 88.6 % on the owner's streams.
+</li><li>
+<b>By car:</b>
+ | car | others | the owner's footage |
+ |---|---|---|
+ | BMW M4 GT3 | 73 % | 68 to 71 % |
+ | Huracán GT3 Evo2 | 71 % | 69 to 72 % |
+ | 992 GT3 R | 67 % | 71 to 73 % |
+ | Mercedes-AMG GT4 | 66 % | 69 % |
+ | Aston Martin Vantage GT4 | 63 % | 76 % |
+ | Ford Mustang GT3 | 61 % | 62 % |
+</li><li>
+<b>By true gear:</b> 1st 47 %, 2nd 58 %, 3rd 67 %, 4th to 6th 74 to 78 %, the same shape as the owner's.
+</li><li>
+<b>So the known-car gear generalises to other drivers.</b> The method was not fitted to one driver.
+</li></ul>
+<p><b>All 27 heard as unknown cars</b> (<code>m1_gearbox.py --sets runs-scout2-any:… --pool runs:…,runs-streams:…,runs-scout:…</code>, then <code>gear-replay runs-scout2-any … --unknown research/flex/k-estimates-scout2.json</code>):</p>
+<ul><li>
+<b>37.2 % of 618,774 moments.</b> The gearbox estimate is 8.0 % off at the median, with 84 of 136 gears named.
+</li><li>
+<b>It works where the upshift is heard right and the car is geared like its class:</b>
+ | car | gear right |
+ |---|---|
+ | M4 GT3 | 48 to 70 % |
+ | 992 GT3 R | 54 to 71 % |
+ | Huracán Evo2 | 52 to 56 % |
+ | 991 II GT3 R | 60 % |
+ | Maserati MC20 GT2 | 53 % |
+ | Huracán ST | 47 % |
+</li><li>
+<b>The main failure is the generic profile mishearing the engine's rpm.</b> The heard upshift comes out 15 to 43 % above
+ the HUD's:
+ | car | heard upshift (rpm) | the HUD's | gear right |
+ |---|---|---|---|
+ | Bentley | 8,722 | 6,970 | 21 % |
+ | McLaren 650S | 8,652 and 8,371 | 7,116 and 7,222 | 20 and 31 % |
+ | Mercedes-AMG GT2 | 9,677 | 6,753 | 25 % |
+ | KTM X-Bow GT2 | 8,549 | 7,392 | 27 % |
+ | Porsche 935 | 7,605 and 8,426 | 6,960 and 6,694 | 26 and 28 % |
+ | Aston V8 Vantage (the first list) | 7,995 | 7,155 | 31 % |
+ These are mostly turbocharged engines, or ones laid out unlike a six. The comb then locks on the wrong set of orders,
+ at about 1.2 to 1.4 times the true rpm.
+</li><li>
+<b>The second failure is a car geared off its class:</b> the Mustang (9 to 14 % taller), the NSX (5 to 7 %), the AMG GT4,
+ the Aston GT4, and the M2 CS (one-make, with few others to learn from).
+</li><li>
+<b>A bigger pool doesn't help.</b> Adding the second list's cars to the priors for the first list's NSX and Aston V8
+ Vantage changed nothing (5.8 to 5.9 % off). The NSX is geared unlike its class, and the Aston's error is in the
+ hearing. One pooled car (the second list's Aston GT4) came from a bad HUD read, so the pool needs a quality check
+ before it grows.
+</li></ul>
+<p><b>What this says.</b></p>
+<ul><li>
+<b>With a known car, Onboard reads other drivers about as well as the owner:</b> 68 % exact, 89 % within one.
+</li><li>
+<b>With an unknown car, the weak link is hearing its engine.</b> That moves "engine layout from the sound" (open since
+ the plan) to the front of the unknown-car work. Two ways in:
+<ul><li>
+hear each recording with a few engine profiles (four, five, six, eight and ten cylinders) and pick by how
+ consistent the result is, judged without the HUD;
+</li><li>
+or recognise the layout from the idle and on-throttle spectra.
+</li></ul>
+</li><li>
+<b>The rev limit and the shift drops could also check the heard rpm.</b> A GT car's upshift rarely sits above 9,000 rpm,
+ and a 9,677 rpm upshift for the AMG GT2 should have raised a doubt.
+</li></ul><h3 id="p27">4.18 The real #911's gear at its N24 speed traps: 37 % right, the top gears squashed (24 October 2026) <span class="prov generated">generated</span></h3><p><b>Why.</b> Everything the gear has been scored on was ACC. The owner ran the live page on a real 911 GT3 R onboard (the 991.2 at NLS 7, a driver's-eye lap) and saw it right in places and falling back to third on long straights. The #911's N24 run (<code>runs-n24/full</code>) already holds a real-car truth for the gear: at each speed trap the official km/h over the rpm heard falls into one of four groups (record of 23 October, <code>tools/n24.py</code>), which are gears 3 to 6.</p>
+<p><b>What.</b> <code>python3 research/flex/n24_trap_gear.py</code>: 164 traps; the run's gear is right at 61 (37 %), within one at 145 (88 %). Sixth is right (29 of 33); fifth is read as sixth 59 times of 80; fourth as sixth 17 times of 48. The run's gearbox came from physics (the speed the revs' climb implies): its km/h per 1000 rpm, 14.1, 17.8, 22.2, 24.0, 23.7, 26.4, has fifth below fourth and sixth 16 % short of the real 31.4, so the top three gears blur together and the tracker settles on the top.</p>
+<p><b>What it means.</b> On the real car the gear without ratios is the weak reading, as in ACC, and the physics gearbox is the cause here. The straights' fall to third that the owner saw is the live page's version of the same weakness: the gear there is the shifts counted plus an offset re-decided every few seconds from that gearbox, and on a long straight near top speed the climb is too small to say much (to be checked on the owner's export).</p>
+<p><b>The Döttinger Höhe.</b> The owner's export of that live run (499 s) showed a second fault: flat out at the end of the Döttinger Höhe the revs sat at 8,630 to 8,750 rpm and the confidence fell from 0.98 to nothing, so the dash went blank. The held-note cue (a held note is not an engine) let an engine keep its motion only while its revs crept up; at top speed they stop. Now an engine that earned its motion and sits flat in the top fifth of its range keeps it for up to 75 s after it last travelled (<code>src/analysis/engine.ts</code>). A test of 25 s flat at 8,700 rpm was sure 5.8 % of the time before the change and passes after; the music tests still read as no engine.</p>
+<p><b>The fix, without spoiling the test.</b> The real 992 R's km/h per 1000 rpm in each gear, put into its profile, makes the gear absolute. Taking it from these traps would make the N24 its own test, so it is taken from the real-car round's tuning clips instead (<code>inventory-real/</code>: the overlay's gear and speed, the rpm heard), and the N24 traps stay the sealed check: this 37 % is the before.</p><h3 id="p28">4.19 Heard as the wrong car, the revs read at a fixed multiple; the page now says so (24 October 2026) <span class="prov generated">generated</span></h3><p><b>Why.</b> The owner tried the synthetic Monza lap with the V8 chosen and it read badly; with the V10, close.</p>
+<p><b>What.</b> Synthetic Monza (one lap, seed 7) heard as each car: as its own car (the test flat-six) revs 98.4 % within 2 %, gear 97.6 %; as the V8, 66.0 % and 8.8 %. Engines made as the V8 and the V10 and heard as other cars show why: the analyser turns the firing into revs through the chosen car's cylinder count, so a V8 heard as a flat-six reads 4/3 high (median upshift 9,480 for a true 7,111), heard as a V10 4/5 low (5,690); a V10 heard as the flat-six reads 5/6 low (7,022 for 8,428). A flat-six heard as the V8 can't be followed above the V8's range: 42 % of frames sit over its limiter.</p>
+<p><b>What changed.</b> <code>src/analysis/mismatch.ts</code>: the median upshift more than 4 % above the car's shift lights or 7 % below them, or more than 15 % of sure frames over its limiter, means the car is probably not the one chosen, and the live page says so (at most every two minutes). Every case above is caught, the right cars pass, and so do the #911's N24 shift points (8,970 to 9,050). The synthetic lap now switches to the car it is made with.</p>
+<p><b>What it means.</b> Naming the car comes first: the firing alone gives revs only up to the cylinder count. The ratio between the wrong and the right reading is a ratio of cylinder counts, so the same numbers could suggest the right engine layout rather than only flag the wrong one: the engine-layout question of section 5, in its simplest form.</p><h3 id="p29">4.20 The real 992 GT3 R's gearbox, measured from team onboards; the N24 gear within one at 98 % (24 October 2026) <span class="prov generated">generated</span></h3><p><b>Why.</b> Every gear number had come from ACC or from physics. Porsche's customer teams (Car Collection Motorsport, Lionspeed GP) publish onboards with the car's data drawn on screen, so a real car's gear and speed can be read beside its sound.</p>
+<p><b>What.</b> <code>tools/hud/porsche-overlay.json</code> reads the overlay's speed, gear, throttle and brake (two vertical slots, filled from the bottom; <code>tools/hud.py</code> now reads vertical bars). Taught on 10 stills, tested on 9 others of both teams: gear 9 of 9, speed 8 of 9 (101 read 181), the pedals as shown; the lap number misread 5 of 9 and was left out. The 17 onboards were split before fetching (<code>inventory-real/README.md</code>): 11 tune, 6 sealed. <code>tools/batch.py --layout</code> read the overlay and heard the 11 tuning clips as the #911 without ratios (<code>runs-real/summary.md</code>): laps 0.1 to 0.6 s from the overlay's on all 7 clips with a whole lap; the circuit named right wherever the overlay's speed named one, and once where it didn't; shifts 85 to 90 % found on the long clips; gear 2 to 55 % exact and speed 9 to 19 % off, as without ratios. Then <code>research/flex/real_ratios.py</code>: the overlay's speed over the revs heard, where its gear holds 0.4 s either side, lined up per clip (lags 0 to 0.2 s): 12.06, 15.74, 19.48, 23.56, 27.30, 31.16 km/h per 1000 rpm, each gear within 2 % across 5 to 11 clips (ACC's 992 is 3 to 4 % shorter in gears 1 to 4, the same in 5 and 6). These went into the #911's profile.</p>
+<p><b>The N24, the check the ratios never saw</b> (<code>n24-ratios-1</code>, <code>research/flex/n24_trap_gear.py --run runs-n24/ratios</code>): 172 traps, gear right 40 % (37 % before), within one 98 % (88 %). Nearly all the misses are one high: fourth read as fifth (46 of 48), fifth as sixth (51 of 80). The truth here is itself uncertain: the trap groups (21.2, 25.1, 27.8, 31.4) fit the measured top two gears within 2 % but sit 6 to 9 % above the measured third and fourth, so either the #911 ran a longer third and fourth at the N24, or a trap's speed and the revs at its sector's end aren't the same moment where the car is still accelerating or already braking. The sealed onboards, with the gear on screen every 0.1 s, are the clean test (<code>real-sealed-1</code>).</p><h3 id="p30">4.21 Real templates and a real climb: the real 992 GT3 R's gear 74.7 % held out, 73.3 % sealed (24 October 2026) <span class="prov generated">generated</span></h3><p><b>Why.</b> With the real ratios in the profile the tuning clips read worse (<code>real-tune-2</code>, <code>runs-real/summary.md</code>): speed 17 to 21 % off, gear 12 to 40 % exact but 46 to 77 % right after one constant offset. The decided gear was one high in every gear (true third read as fourth, fourth as fifth, fifth as sixth), as on the N24 (4.20). The sealed onboards had been queued before this run was looked at, and were scored with the same fault (<code>runs-real-sealed/summary.md</code>: gear 0 to 54 % exact, speed 14 to 18 % off): a process error, recorded as it was.</p>
+<p><b>What.</b> The gear decision has two inputs the real profile lacked. The upshifts as heard (<code>research/flex/real_upshifts.py</code>): the drop is smaller than the box's ratio, most at 1 to 2 (0.790 heard against 0.766), because the car keeps accelerating through the shift. And the anchor: the speed from the revs' climb, from guessed power, mass and drag, read 8 to 23 % fast at 80 to 240 km/h (<code>tools/gear-replay.ts</code>), so the gear came out one high. Replayed on the tuning runs with each clip held out of its own learning (<code>npm run gear-replay -- runs-real --manifest inventory-real/fetched/manifest.csv --shifts loo --climb loo</code>): gear right 24.6 % (no templates, physics), 48.0 % (templates), 74.7 % (templates and the learned climb); laps right on all 8 with a lap. Learned from all 11 (<code>--learned research/flex/real-learned.json</code>: 815 upshifts, 7,636 moments on full power) into the #911's profile.</p>
+<p><b>The sealed onboards, with that profile</b> (<code>--shifts own --climb own</code> on <code>runs-real-sealed</code>): gear right 73.3 % of 6,514 moments (the Evo at Spa 78.3, Dubai 69.1, Bathurst 64.9, Yas Marina at night 73.7), laps right on all 3 with a lap. Two sealed clips gave no overlay gear: the WEC car (another production's overlay) and the NLS lap (its overlay not this one), so they test nothing yet. The sealed set has now been scored twice, first with the fault above and then once with the fix, which was learned from the tuning clips alone; both are recorded. In ACC the known-car gear on other drivers' footage was 67.9 % (4.17).</p><h3 id="p31">4.22 The N24 with the learned profile: the gear at the speed traps 84 % right (24 October 2026) <span class="prov generated">generated</span></h3><p><code>n24-learned-1</code> heard the #911's N24 again with the profile of 4.21 (real ratios, heard upshifts and climb, all from the tuning onboards); <code>python3 research/flex/n24_trap_gear.py --run runs-n24/learned</code>: 172 traps, gear right 145 (84 %; 40 % with the ratios alone, 37 % with physics), within one 168 (98 %). Fourth is right at all 48 of its traps, though its trap group (25.1 km/h per 1000 rpm) sits 6 % above the measured fourth (23.56): the trap moment, not the gearbox, is the likelier reason (4.20). The misses left are fifth read as sixth (21 of 80). The landing page and the case study now quote this and the sealed 73.3 %.</p><h3 id="p32">4.23 The owner's hour in the 992 at the Red Bull Ring: the gear 86.8 %, the laps to 0.22 s (24 October 2026) <span class="prov generated">generated</span></h3><p><b>Why.</b> A long run in a car the library knows, at the circuit where real 992 GT3 R onboards have their data on screen (<code>inventory-stint/README.md</code>): a stint for the lap and tyre analysis, braking zones for the downshift work, and one half of a game-against-real pair.</p>
+<p><b>What.</b> The recording (62.1 min, game version 1.9.15.1, air 22 °C, track 30 °C): the setup screens, the marker (three limiter holds at 22.6 to 29.8 s), driving from 31 s to 3,664 s, the game's timetable and the pit screen at the end. The display read every 0.1 s (<code>runs-stint/1/hud.csv</code>), the sound heard as the 992 (<code>runs-stint/1/report.json</code>), and the timetable read from the end stills by <code>research/stint/timetable.py</code> (tesseract, row by row; a row whose cells differ in colour read cell by cell; pages merged by sequence alignment): 39 laps with sectors, every one summing to its lap time, laps 3 to 20 checked by eye against one page, all exact.</p>
+<ul><li>
+<b>Gear from the sound against the display:</b> 86.8 % exact, 97.6 % within one (9,076 moments at speed). The best score yet:
+ the known car, clean game sound, a long run.
+</li><li>
+<b>Laps:</b> the sound found 39, as the timetable has; its lap times sit a median 0.22 s from the official ones (31 of 39 within
+ 0.5 s). The circuit was named by the speed alone (match 0.93, Oulton Park next at 0.53), the lap 4,274 m against 4,285.
+</li><li>
+<b>Official laps:</b> best 1:29.925 (lap 9), median 1:30.412; 12 rows white or green, 27 red (the game's mark for a lap it did
+ not count, as read here). The steadiest run is laps 4 to 11 (1:29.925 to 1:30.412), not the late laps the sound suggested.
+</li><li>
+<b>Fuel:</b> the display's litres a lap from 2.70 to 2.46 (median 2.49); the game's own average 2.507 L/lap. The total read as
+ 10.5 for 105: ACC shows "104.8 l" and the box, sized for "38.6", clipped the last digit. Fixed (<code>tools/hud/acc-ps5.json</code>: a
+ wider box whose last glyph, the unit, is dropped): the start stills now read 105.0 falling to 100.8, the PS5 stills as before. Read again through the hour
+ (<code>stint-h-hud-fuel</code>): 105.0 L at the start, 5.3 L at the end, 1.66 L a minute of driving. Across the PS5 clips' new fuel reads
+ (<code>ps5-rehud-fuel-1</code>): the 992 1.43 L/min (13 clips, 233 min, circuits and traffic mixed), the M4 1.59, the Cup 0.97.
+</li><li>
+<b>Tyres:</b> pressures settled within five minutes at 26.5 to 26.9 psi and held. By the widget's colour three tyres stayed in
+ the flat green (70 to 90 °C); the left rear drifted hotter all hour (hue 135 to 91, about 100 °C on the colour table), the
+ right rear late. The pit screen's wear (from 3.0 new, read across each tyre): FL 2.02, 1.90, 1.77 and FR 1.75, 1.98, 2.20,
+ moderate graining; RL 1.81, 1.55, 1.37 and RR 1.35, 1.66, 2.06, light graining. All four wore most at the inner edge, the
+ rears most of all.
+</li><li>
+<b>The limiter (corrected in 4.24):</b> the sound counted 313 limiter hits against the revs at the limiter 0.6 % of the
+ driving, first taken for an over-count; the display has 241 separate touches at 9,150 rpm or more (it reads every 0.1 s and
+ misses the briefest), so the count is about right: the owner brushes the limiter at the low-gear shifts.
+</li></ul><h3 id="p33">4.24 The hotstint's tyre truth, and the game's 992 against the real one at the same circuit (24 October 2026) <span class="prov generated">generated</span></h3><p><b>The tyres' own temperatures.</b> The pit screen's tyres page at the end of the hour (<code>tools/hud/stills-stint-end</code>, 3,699 s) gives the game's last readings across each tread, outer, middle, inner: front left 79, 85, 91 °C; front right 65, 73, 81; rear left 82, 88, 95; rear right 70, 80, 90. Hot pressures 26.9 to 27.0 psi. The setup: camber −4.0° front and −3.5° rear, toe −0.16° front and +0.12° rear, caster 12.4°, cold pressures 25.8, 26.3, 24.9, 25.2 psi. Every tyre runs 12 to 20 °C hotter inside than outside and wears most at its inner edge, the rears most: the camber is the likely reason. Against the widget's colours (4.23): the left rear is the hottest, as its colour said, but the colour table put its middle stripe at about 100 °C where the game reads 88 at the end (the last readings come after the in-lap, so they may sit low). The colour gives the ranking; its absolute degrees above 90 °C want this truth to be refitted.</p>
+<p><b>The game against the real car</b> (<code>python3 research/stint/game_vs_real.py</code>: the hour against the real tuning onboards at the same circuit, <code>runs-real/3</code> and <code>10</code>, each with its own screen as truth):</p>
+<table><thead><tr><th>gear</th><th>km/h per 1000 rpm (game, real)</th><th>upshift heard (game, real)</th><th>upshift at (game, real)</th></tr></thead><tbody><tr><td>1</td><td>11.50, 12.20</td><td>0.822, 0.789</td><td>9,199, 9,339</td></tr><tr><td>2</td><td>15.14, 15.86</td><td>0.820, 0.813</td><td>9,219, 9,247</td></tr><tr><td>3</td><td>18.90, 19.56</td><td>0.833, 0.835</td><td>9,112, 9,065</td></tr><tr><td>4</td><td>22.92, 23.62</td><td>0.849, 0.863</td><td>8,998, 8,917</td></tr><tr><td>5</td><td>27.03, 27.33</td><td></td><td></td></tr></tbody></table>
+<ul><li>
+<b>Gearing:</b> the game's box is 3 to 5 % shorter in gears 1 to 4 and 1 % in fifth, as 4.20 found from other circuits.
+</li><li>
+<b>Upshifts as heard:</b> the same from second to fourth; out of first the game's revs drop less (0.822 against 0.789).
+</li><li>
+<b>Where the owner shifts:</b> within 1 to 2 % of the real drivers in every gear, a little earlier out of first.
+</li><li>
+<b>The sound:</b> on power the game puts most of its energy in the six-cylinder firing orders (3, 6, 9, 12: 18, 17, 10, 11 dB
+ over the noise) where the real onboards carry less of it (15, 10, 7, 8 dB) and more in the half orders (1.5 and 4.5: 13 and
+ 12 dB against 11 and 9). The game's engine sounds cleaner, more purely six-cylinder; the real one carries more of the uneven
+ orders. Part of that is the microphones (a team's onboard camera against the game's mix), not the engines alone.
+</li></ul><h3 id="p34">4.25 The hour as training data: almost nothing gained, which says what data would help (24 October 2026) <span class="prov generated">generated</span></h3><p><b>Why.</b> The owner's hour (4.23) had only been a test. Asked what it changed: nothing, until it was learned from.</p>
+<p><b>What.</b> Both models that learn from the footage were trained again with the hour added and scored as before, each run held out of its own learning:</p>
+<ul><li>
+<b>The gear</b> (`npm run gear-replay -- runs --manifest inventory/manifest.csv --shifts loo --climb loo --learn
+ runs-streams:inventory-streams/manifest.csv,runs-stint:inventory-stint/fetched/manifest.csv<code>; </code>--learn` now takes several
+ sources): the 992 clips 72.8 % without the hour, 73.0 % with it. The game 992's profile is now learned with it
+ (<code>data/acc-learned.json</code>: 3,226 upshifts, 31,302 moments on full power, 18 runs). The hour itself, learned from the PS5 clips
+ only, replays at 76.7 % (the analyser's own reading of it, 86.8 %, uses more than the replay does).
+</li><li>
+<b>The pedals</b> (<code>python3 research/flex/pedals.py --extra runs-stint/1:research/flex/bands/stint-1.npz:porsche-992-gt3r-acc</code>;
+ the hour learned from, never scored, so the PS5 scores compare): right 70.7 % to 70.8 % with each run held out, 63.2 % to
+ 63.4 % with each car held out.
+</li></ul>
+<p><b>What it means.</b> For the 992 the models have enough of the same: another hour of it moves them by tenths. What holds them back is in the method (the gear through braking zones, part throttle told from full) and in what the data lacks: other cars (an unknown car's gear is at 37 to 46 %, 4.16 and 4.17), wet running, more circuits, and real cars. The hour's worth was as truth: the cleanest test yet, the game-against-real pair, the tyre and fuel truth. The next drives worth making are the cars and conditions the library hasn't heard.</p><h3 id="p35">4.26 The live analyser itself on the sealed real onboards: gear 76 %, speed within 1 to 4 % (24 October 2026) <span class="prov generated">generated</span></h3><p><b>Why.</b> 4.21's 73.3 % came from replaying saved runs; a visitor meets the analyser itself. <code>real-final-sealed</code> (<code>tools/batch.py --redo --hud-from runs-real-sealed</code>, <code>runs-real-final/summary-sealed.md</code>) heard the four sealed onboards with overlay gear again, as the page does, with the #911 profile of 4.21 (unchanged since).</p>
+<p><b>What.</b> Gear right: Spa (the Evo) 80.5 %, Dubai 71.3 %, Bathurst 64.8 %, Yas Marina at night 76.7 %; 75.7 % weighted by length. Speed off: 1.3, 3.5, 3.8 and 1.7 % (14 to 18 % before the real profile, 4.21). Laps: 137.7 against 137.8 s, 120.2 against 119.7, 114.8 against 114.8. The circuit named at Spa. The sealed set has been scored three times now (4.21's fault, 4.21's replay, this), always with profiles learned from the tuning clips alone. The tuning clips heard the same way (<code>real-final-tune</code>, <code>runs-real-final/summary-tune.md</code>, six of the eleven) give gear 78.2 % weighted (72.0 to 82.2 %) and speed 0.9 to 2.0 % off: in sample only 2.5 points above the sealed set, so the learned profile is not fitted to its own clips.</p><h3 id="p36">4.27 A second listener: a music analyser, never told it was hearing a car, finds the same lap clock (24 October 2026) <span class="prov generated">generated</span></h3><p><b>Why.</b> Onboard's N24 lap clock rests on a quiet stretch just into sector 9 (<code>tools/n24.py</code>, <code>docs/ONBOARD-PLAN.md</code>); its revs and shifts have no logger to check them. The owner played the onboard from 0:00 into Rhyx, a music analyser built separately (branch <code>audio/observatory</code>, build 27ff696), which reports level, brightness, onsets, drum hits, chords, sections and the depth of the sound's modulation ten times a second. It knows nothing of engines or laps. <code>python3 research/rhyx/compare.py</code> (<code>research/rhyx/session-911.json</code>, trimmed, no audio; output <code>compare.json</code>) holds its 26 minutes against Onboard's.</p>
+<p><b>What.</b></p>
+<ul><li>
+<b>Offset.</b> Rhyx's dominant frequency sits on the flat-six's firing note (rpm / 20 Hz, ±3 %) most often 1.9 s off the
+ owner's 0:00 (capture start). Even then it does so only 4.9 % of the time, against 1.6 to 2.2 % when misaligned on
+ purpose. A first search over the whole race, before the start was known, put a spurious peak at 8,469 s; it is not used.
+</li><li>
+<b>The lap clock.</b> Its modulation depth stays below 0.03 for 5 s or more four times in 26 minutes, and all four sit
+ at the end of a lap: 1,035–1,057 s and 1,533–1,559 s, and lap 1's broken in two (527–533, 541–547). Each one ends
+ where Onboard's quiet stretch ends (548.5, 1,056.8, 1,558.7 s) and starts about 10 s before it. Nothing else in the 26
+ minutes is that steady.
+</li><li>
+<b>The start.</b> Its first loud section begins at 56.5 s; the race starts at 55.6 s on Onboard's clock.
+</li><li>
+<b>Pitch.</b> Of 177 chords named while Onboard was sure of the engine, the root is the firing note's pitch class 39
+ times (chance 15) and one semitone off only 6: when it hears the engine as a note, it hears the right one.
+</li><li>
+<b>Shifts.</b> Its snare and hi-hat detectors fire at Onboard's shifts more than at random moments, the hi-hat mostly
+ at downshifts (z 5.5; upshifts 1.5), the kick not at all. Its brightness does not follow the revs (r 0.00).
+</li></ul>
+<p><b>So.</b> An independent tool, written for another purpose, puts the once-a-lap steady stretch where Onboard's clock does, and hears the firing note and the downshift blips. That supports the clock and the shift timing a little; it does not check the revs, which still wait for a logger.</p><h3 id="p37">4.28 The live dash's gear: right 38 % of the time as shown, 66 % decided on the last 90 s (24 October 2026) <span class="prov generated">generated</span></h3><p><b>Why.</b> Watching live, the owner found the dash's gear clunky: right when it settled in a long gear, then lost. Every gear figure so far was the report's, decided over the whole run with hindsight; nobody had scored the dash. <code>onboard --dash</code> now keeps what the page receives (<code>heard.json.gz</code>: frames and shifts, no audio), <code>tools/dash-replay.ts</code> replays the page's dash from it (the report rebuilt every 6 s, as the worker does), and <code>research/dash/score.py</code> scores it against the HUD. Jobs <code>dash-real-tune</code> (the six tuning onboards, <code>runs-dash/real</code>) and <code>dash-stint</code> (the owner's hour, <code>runs-dash/stint</code>).</p>
+<p><b>What.</b></p>
+<ul><li>
+<b>As shown (the count):</b> right 38.4 % on the onboards and 23.6 % in the hour, against the report's 78 % and 87 % on the
+ same sound. The analyser counts every shift-sized jump at once, and a third of the upshifts it hears are false: 177 of
+ them on a lift or overrun (true upshifts: 660 of 673 on power), many within a second of a downshift (the revs settling
+ after the blip), from lower revs. About one downshift in five goes unheard.
+</li><li>
+<b>The report is right where it ends.</b> Its gear at the newest moment it has heard is right 75 % of the time, against 78 %
+ with 20 s after it (<code>research/dash/reports.ts</code>, <code>variants.py</code>); the loss was the 6 s between reports, counted.
+</li><li>
+<b>Decided on a window.</b> The report's own decision made again every 0.5 s on the last 90 s, carried to now by the
+ believable shifts heard since (an upshift on power, near the shift point, not just after a downshift), and on overrun
+ expecting the car to slow (median -14 km/h a second on the overlays): 66.1 % on the onboards, 60.9 % in the hour. On power
+ 74 to 79 %; on overrun 39 %, the gear read high (downshifts unheard under braking). A belief over the gears run forward
+ gave 59 % and 58 %; holding a new gear for a second decision, 61 %; deciding every 0.25 s, more flicker for one point.
+</li><li>
+<b>Not everywhere.</b> On a clean synthetic lap the count is right 82 % and the window 64 %: the window is the dash for cars
+ whose climb was measured from footage, the count for the rest.
+</li></ul>
+<p><b>So.</b> The dash shows the windowed decision for the 992s. The report's gear, and every figure quoted from it, is unchanged.</p>
+<p><b>The sealed onboards, once</b> (<code>dash-real-sealed</code>, <code>runs-dash/sealed</code>, heard with the dash as committed in f0be915): the new dash right 62.6 % (Spa 65.8, Dubai 60.5, Bathurst 56.8, Yas Marina 62.5), the old 34.9 %, the report on the same sound 75.7 %. Changes 30 a minute against the true 18.5: it still flickers, mostly around braking.</p><h3 id="p38">4.29 The screen reader in the browser: a video file checks the dash against its own screen (24 October 2026) <span class="prov generated">generated</span></h3><p><b>Why.</b> Every figure in this record rests on <code>tools/hud.py</code> reading the screen on the owner's Mac. A visitor with a video of their own had no way to check Onboard. <b>What.</b> <code>src/screen/reader.ts</code> ports the reading. It agrees with <code>hud.py</code> on all 27 saved stills of both layouts (<code>tests/screen.test.ts</code>). <code>tool.html</code> now plays an opened video beside the dash, reads its screen ten times a second with whichever known layout reads it (ACC's HUD, the Porsche teams' overlay), and shows how often the dash's gear agrees and how far its speed is off; the report carries the same. Details in <code>docs/SCREEN-READER.md</code>. <b>So.</b> The check that built the project is in the page: anyone with footage that shows a known HUD can score Onboard on it.</p><h3 id="p39">4.30 Extraction: a file's telemetry saved, with the screen as the truth where it shows a HUD (24 October 2026) <span class="prov generated">generated</span></h3><p>Opening a file now offers extraction beside listening along. The sound runs through the analyser in a worker as fast as it will go. A video's screen is read as it plays muted at four times, with every field of the layout: ACC's fuel, tyre pressures and colours, brake bias, ABS, map and last lap, as well as gear, speed, rpm and pedals. The full reader agrees with <code>tools/hud.py</code> on 42 stills (960 readings, <code>tests/screen.test.ts</code>). The CSV takes the screen's value wherever it was read and the sound's elsewhere, and says which. On ACC footage the screen is what <code>hud.py</code> read 85 to 99 % of the time, and the sound is the fallback and the check. A 14 s test video extracted in 3.9 s.</p><h3 id="p40">4.31 A reader's review, and what it corrected (25 October 2026) <span class="prov generated">generated</span></h3><p>An independent reader of the case study (with their own assistant) asked four things; three changed the page.</p>
+<ul><li>
+<b>A naive baseline.</b> Always guessing the commonest gear on the sealed onboards' overlays (fourth) is right 24.2 % of
+ the time (19,567 moments; first 4.6 %, second 24.0, third 20.3, fourth 24.2, fifth 18.6, sixth 8.2). The 24.6 % of
+ physics without ratios (4.21) was no better than that; the 73.3 % is three times it. The chart now shows the line.
+</li><li>
+<b>The lap clock is partly fitted.</b> The quiet stretches come from the sound alone (the stint analysis), but <code>tools/n24.py</code>
+ then chooses where in the lap they sit (0.05 into sector 9) and the race start (55.6 s) to land the most markers closest
+ to the official timing: three numbers for 24 laps. The 23 of 24 measures how regularly the stretches recur, not where they
+ fall. The spread is now stated beside the median: 13 within 0.5 s, 17 within 1 s, the worst 4.1 s.
+</li><li>
+<b>Which sealed score.</b> Six were sealed; two carry another production's overlay, so four test the gear. The 73.3 % is
+ their second scoring (4.21, after the fault; the first gave 0 to 54 %). Since then the live report (75.7 %, 4.26) and the
+ live dash (62.6 %, 4.28), always with what the eleven taught. The page had said "scored once"; corrected.
+</li><li>
+<b>Why the real car beats the game</b> (73.3 against 67.9 %): it doesn't, on this evidence. The game figure (4.17) is other
+ drivers' footage of several cars, through streams' mixes; the real one is four clips of one car, clean team audio, with
+ a profile learned from eleven clips of the same car and overlay. Different tests, and four clips is a small sample
+ (64.9 to 78.3 % between them).
+</li></ul><h2 id="p41">5. What is still open <span class="prov generated">generated</span></h2><ul><li>
+<b>M3.</b> The gear at the end of each braking zone: the anchor before the zone, less the downshifts heard and
+ detected (now within one 71 % of the time), held against the climb's anchor as the throttle returns; then let the
+ laps vote (the same corner in the same gear every lap). Scored with gear accuracy on the replay and by phase (4.15).
+</li><li>
+<b>The M4 GT3's weak detection</b> (AUC 0.77 aligned), not yet understood.
+</li><li>
+<b>The M1 confound.</b> Hear the development set again with class profiles, and redo M1's table.
+</li><li>
+<b>Other drivers.</b> Recordings from other people (<code>inventory-scout/</code>), scored the same way. This is the first test of
+ the method on a driver who isn't the owner.
+</li><li>
+<b>M4.</b> The sealed test, once.
+</li></ul><h2 id="p42">6. Rerunning it <span class="prov generated">generated</span></h2><p>From the repository root, with <code>npm install</code> done and Python 3 with numpy:</p>
+<table><thead><tr><th>what</th><th>command</th><th>gives (23 October)</th></tr></thead><tbody><tr><td>physics only, at the real rate</td><td><code>npm run gear-replay -- runs --manifest inventory/manifest.csv --upsample 3</code></td><td>58.2 %</td></tr><tr><td></td><td><code>npm run gear-replay -- runs-streams --upsample 3</code></td><td>47.9 %</td></tr><tr><td>learned, run left out</td><td><code>npm run gear-replay -- runs --manifest inventory/manifest.csv --upsample 3 --shifts loo --climb loo</code></td><td>70.9 %</td></tr><tr><td></td><td><code>npm run gear-replay -- runs-streams --upsample 3 --shifts loo --climb loo</code></td><td>58.0 %</td></tr><tr><td>learned from all</td><td><code>… --shifts own --climb own --learn &lt;the other set&gt;</code></td><td>71.0 % / 66.0 %</td></tr><tr><td>unknown car (M1)</td><td><code>npm run gear-replay -- runs --manifest inventory/manifest.csv --learn runs-streams:inventory-streams/manifest.csv --upsample 3 --shifts loo --climb loo --unknown research/flex/k-estimates.json</code></td><td>68.4 %</td></tr><tr><td></td><td><code>npm run gear-replay -- runs-streams --learn runs:inventory/manifest.csv --upsample 3 --shifts loo --climb loo --unknown research/flex/k-estimates.json</code></td><td>52.5 %</td></tr><tr><td>M1's gearbox</td><td><code>python3 research/flex/m1_gearbox.py --out research/flex/k-estimates.json</code></td><td>1.8 % off (median)</td></tr><tr><td>M0, real runs</td><td><code>python3 research/flex/m0_score.py</code></td><td>72.4 / 21.8 % (PS5), 68.2 / 17.1 % (streams)</td></tr><tr><td>M2's probe</td><td><code>python3 tools/shift_probe.py &lt;capture&gt; runs/&lt;id&gt;/hud.csv runs/&lt;id&gt;/report.json --out research/flex/probe/&lt;id&gt;</code> (needs the recording)</td><td><code>probe.json</code></td></tr><tr><td>M2's band energies</td><td><code>python3 tools/shift_probe.py --bands-all &lt;manifest&gt; &lt;capture dir&gt; &lt;runs dir&gt; research/flex/bands/&lt;set&gt;</code> (needs the recordings)</td><td><code>research/flex/bands/</code></td></tr><tr><td>M2's detector</td><td><code>python3 research/flex/m2_detector.py --out research/flex/m2-detector.json --model research/flex/m2-model.json</code></td><td>downshift AUC 0.825</td></tr><tr><td>M2's detector, aligned</td><td><code>python3 research/flex/m2_detector.py --align --out research/flex/m2-detector-aligned.json --detections research/flex/m2-detections.json</code></td><td>downshift AUC 0.903</td></tr><tr><td>detections in the tracker</td><td>the learned-run-left-out replay plus <code>--detected research/flex/m2-detections.json --det-min 3</code></td><td>70.1 % / 58.9 %</td></tr><tr><td>counting per zone</td><td><code>python3 research/flex/m3_zone_count.py --det-min 3</code></td><td>32.2 % exact</td></tr><tr><td>errors by phase</td><td>see the top of <code>research/flex/m3_phases.py</code></td><td>table in 4.15</td></tr></tbody></table>
+<p>Notes on reproducing:</p>
+<ul><li>
+<b>Physics only</b> gives 58.2 % and 47.9 % today, against 57.0 % and 46.6 % when section 4.5 was written. Later changes
+ to the tracker's defaults (the shift evidence and gaps) moved it about a point.
+</li><li>
+<b>M1's numbers need <code>--learn</code> with the other set.</b> It pools both sets for the class priors. Without it the class
+ priors come from one set only, and the PS5 figure is 65.8 %. The M1 table above used <code>--learn</code>.
+</li><li>
+<b>The detector</b> trains in about ten minutes on a laptop CPU. Its training sample of no-shift steps is drawn with a
+ fixed seed, so a rerun gives the same numbers, to rounding.
+</li><li>
+<b>The learned-run-left-out replay</b> gives 59.2 % on the streams when it learns from both sets (<code>--learn runs:…</code>, as
+ in 4.13) and 58.0 % from the streams alone (as in 4.5).
+</li><li>
+<b>Real runs</b> need the recordings, so only the owner's Mac can redo them. The job files in <code>jobs/done/</code> record the
+ commands, how long each took and the end of each log.
+</li></ul><h2 id="p43">7. Changes to this record <span class="prov generated">generated</span></h2><ul><li>
+23 October 2026: written from the plan's log (<code>docs/ONBOARD-PLAN.md</code>), the commits, and reruns of every replay number
+ above. The M0 scorer, previously an inline script, was kept as <code>research/flex/m0_score.py</code> and reproduces its table
+ exactly.
+</li><li>
+23 October 2026, later: the detector's results (4.12), including the first scoring error and the labels' clock; the
+ detections in the tracker (4.13); counting per zone (4.14); the errors by phase (4.15). The TiTan race's Cup is the
+ profile's car (4.9), withdrawing the wrong-generation guess.
+</li><li>
+24 October 2026: a second listener (4.27), a music analyser held against the N24 onboard's first 26 minutes.
+</li><li>
+24 October 2026, later: the live dash's gear scored and decided on a window (4.28).
+</li><li>
+24 October 2026, later: the screen reader in the browser (4.29).
+</li><li>
+24 October 2026, later: extraction and the full screen reader (4.30).
+</li><li>
+25 October 2026: a reader's review (4.31): the naive baseline, the fitted clock, the sealed scores, stated on the page.
+</li></ul>
+<footer>corgido · built with Claude Code. The record is the project's own (research/flex/REPORT.md), shown as written; its
+labels come from case-study/provenance.json.</footer>
+</main>
+</body>
+</html>
