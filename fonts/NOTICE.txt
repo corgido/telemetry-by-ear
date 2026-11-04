@@ -1,0 +1,13 @@
+The four typefaces of the LeagueBoss design system, self-hosted. Each is under the
+SIL Open Font License 1.1 (none has a Reserved Font Name); the licence for
+each file is beside it.
+
+bebas-neue.woff2     Bebas Neue (Dharma Type), Regular. The page title only.
+archivo.woff2        Archivo (Omnibus-Type), variable: weight 400 to 900,
+                     width 75 to 100. Headings, labels, tables, chart text.
+space-grotesk.woff2  Space Grotesk (Florian Karsten), variable: weight 400
+                     to 700. Prose.
+space-mono.woff2     Space Mono (Colophon), Regular. Paths and commands.
+
+Taken from the google/fonts repository and subset to Latin plus the
+punctuation, arrows and maths signs these pages use, with fontTools.
